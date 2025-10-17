@@ -6,37 +6,29 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>FunWords - 高考词汇挑战 v2.3</title>
+    <title>FunWords - 高考词汇挑战 v2.4</title>
     <style>
+        /* 重置和基础样式 */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
+        /* CSS变量定义 */
         :root {
-            /* 柔和的蓝绿色调配色方案 */
             --primary-color: #667eea;
             --primary-dark: #5a6fd8;
-            --primary-light: #818cf8;
             --success-color: #10b981;
-            --success-light: #34d399;
-            --warning-color: #f59e0b;
-            --warning-light: #fbbf24;
-            --error-color: #ef4444;
-            --error-light: #f87171;
-            --background-start: #e0f2fe;
-            --background-end: #dbeafe;
             --card-bg: rgba(255, 255, 255, 0.95);
             --text-primary: #1e293b;
             --text-secondary: #64748b;
-            --text-muted: #94a3b8;
+            --background-start: #e0f2fe;
+            --background-end: #dbeafe;
             --border-color: #e2e8f0;
-            --border-light: #f1f5f9;
             --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
             --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
             --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
-            --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.1);
             --radius-sm: 8px;
             --radius-md: 12px;
             --radius-lg: 16px;
@@ -53,7 +45,6 @@
             overflow-x: hidden;
         }
 
-        /* 背景装饰 */
         body::before {
             content: '';
             position: fixed;
@@ -61,10 +52,9 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background:
-                radial-gradient(circle at 20% 80%, rgba(102, 126, 234, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(16, 185, 129, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 40% 40%, rgba(245, 158, 11, 0.05) 0%, transparent 50%);
+            background: radial-gradient(circle at 20% 80%, rgba(102, 126, 234, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 20%, rgba(16, 185, 129, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 40% 40%, rgba(245, 158, 11, 0.05) 0%, transparent 50%);
             pointer-events: none;
             z-index: 0;
         }
@@ -97,7 +87,7 @@
             }
         }
 
-        /* 主界面样式 */
+        /* 主屏幕样式 */
         .home-screen {
             min-height: 100vh;
             display: flex;
@@ -112,11 +102,11 @@
             background: var(--card-bg);
             backdrop-filter: blur(10px);
             border-radius: var(--radius-xl);
-            box-shadow: var(--shadow-xl);
+            box-shadow: var(--shadow-lg);
             padding: 60px 40px;
             max-width: 800px;
             width: 100%;
-            border: 1px solid var(--border-light);
+            border: 1px solid var(--border-color);
             position: relative;
             overflow: hidden;
         }
@@ -144,7 +134,7 @@
             letter-spacing: -2px;
         }
 
-        .logo span {
+        .logo span:first-child {
             background: linear-gradient(135deg, var(--primary-color), var(--success-color));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -160,7 +150,7 @@
 
         .version-tag {
             display: inline-block;
-            background: var(--success-light);
+            background: var(--success-color);
             color: white;
             padding: 4px 12px;
             border-radius: 20px;
@@ -179,8 +169,8 @@
 
         .feature-card {
             background: var(--card-bg);
-            border: 2px solid var(--border-light);
-            border-radius: var(--radius-lg);
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-md);
             padding: 24px 20px;
             transition: all 0.3s ease;
             position: relative;
@@ -205,7 +195,7 @@
 
         .feature-card:hover {
             transform: translateY(-8px);
-            box-shadow: var(--shadow-xl);
+            box-shadow: var(--shadow-lg);
             border-color: var(--primary-color);
         }
 
@@ -235,7 +225,7 @@
 
         /* 统计卡片 */
         .stats-card {
-            background: linear-gradient(135deg, var(--primary-light), var(--primary-color));
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
             color: white;
             border-radius: var(--radius-lg);
             padding: 30px;
@@ -248,10 +238,10 @@
             content: '';
             position: absolute;
             top: -50%;
-            right: -50%;
+            left: -50%;
             width: 200%;
             height: 200%;
-            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
             animation: float 6s ease-in-out infinite;
         }
 
@@ -274,7 +264,6 @@
         .high-score {
             font-size: 3rem;
             font-weight: 800;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
             position: relative;
             z-index: 1;
         }
@@ -297,6 +286,7 @@
             overflow: hidden;
             z-index: 1;
             min-width: 120px;
+            min-height: 44px;
         }
 
         .btn::before {
@@ -306,7 +296,7 @@
             left: -100%;
             width: 100%;
             height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
             transition: left 0.5s ease;
         }
 
@@ -317,13 +307,13 @@
         .btn-primary {
             background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
             color: white;
-            box-shadow: var(--shadow-lg);
+            box-shadow: var(--shadow-md);
             transform: translateY(0);
         }
 
         .btn-primary:hover {
             transform: translateY(-3px);
-            box-shadow: var(--shadow-xl);
+            box-shadow: var(--shadow-lg);
         }
 
         .btn-primary:active {
@@ -338,14 +328,13 @@
         }
 
         .btn-secondary:hover {
-            background: var(--border-light);
+            background: var(--border-color);
             border-color: var(--primary-color);
             color: var(--primary-color);
             transform: translateY(-2px);
             box-shadow: var(--shadow-md);
         }
 
-        /* 导航菜单 */
         .nav-menu {
             display: flex;
             justify-content: center;
@@ -356,8 +345,8 @@
 
         .nav-btn {
             background: var(--card-bg);
-            border: 2px solid var(--border-light);
             color: var(--text-secondary);
+            border: 2px solid var(--border-color);
             padding: 12px 24px;
             border-radius: var(--radius-md);
             font-size: 0.9rem;
@@ -371,13 +360,13 @@
 
         .nav-btn:hover {
             background: var(--primary-color);
-            color: white;
             border-color: var(--primary-color);
+            color: white;
             transform: translateY(-2px);
             box-shadow: var(--shadow-md);
         }
 
-        /* 游戏界面 */
+        /* 游戏屏幕样式 */
         .game-screen {
             max-width: 900px;
             margin: 40px auto;
@@ -386,11 +375,11 @@
         .game-header {
             background: var(--card-bg);
             backdrop-filter: blur(10px);
-            border-radius: var(--radius-xl);
+            border-radius: var(--radius-lg);
             padding: 24px;
-            box-shadow: var(--shadow-lg);
+            box-shadow: var(--shadow-md);
             margin-bottom: 30px;
-            border: 1px solid var(--border-light);
+            border: 1px solid var(--border-color);
         }
 
         .game-stats {
@@ -403,14 +392,14 @@
 
         .stat-group {
             display: flex;
-            gap: 24px;
             align-items: center;
+            gap: 24px;
             flex-wrap: wrap;
         }
 
         .stat-item {
             text-align: center;
-            min-width: 80px;
+            min-width: 60px;
         }
 
         .stat-label {
@@ -433,24 +422,23 @@
         }
 
         .heart {
-            color: var(--error-color);
             transition: all 0.3s ease;
         }
 
         .heart.empty {
-            color: var(--text-muted);
+            color: var(--text-secondary);
             transform: scale(0.8);
         }
 
-        /* 题目区域 */
+        /* 问题容器 */
         .question-container {
             background: var(--card-bg);
             backdrop-filter: blur(10px);
-            border-radius: var(--radius-xl);
+            border-radius: var(--radius-lg);
             padding: 40px;
-            box-shadow: var(--shadow-lg);
+            box-shadow: var(--shadow-md);
             margin-bottom: 30px;
-            border: 1px solid var(--border-light);
+            border: 1px solid var(--border-color);
             position: relative;
         }
 
@@ -460,7 +448,7 @@
             align-items: center;
             margin-bottom: 30px;
             padding-bottom: 20px;
-            border-bottom: 2px solid var(--border-light);
+            border-bottom: 2px solid var(--border-color);
         }
 
         .question-type {
@@ -483,16 +471,15 @@
             color: var(--text-primary);
             margin-bottom: 30px;
             text-align: center;
-            line-height: 1.6;
             font-weight: 500;
+            line-height: 1.6;
         }
 
-        /* 选项样式 */
+        /* 选项网格 */
         .options-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 16px;
-            margin-bottom: 20px;
         }
 
         .option-card {
@@ -508,6 +495,10 @@
             color: var(--text-primary);
             position: relative;
             overflow: hidden;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .option-card::before {
@@ -517,7 +508,7 @@
             left: 50%;
             width: 0;
             height: 0;
-            background: var(--primary-light);
+            background: var(--primary-color);
             border-radius: 50%;
             transform: translate(-50%, -50%);
             transition: all 0.3s ease;
@@ -526,7 +517,7 @@
         .option-card:hover::before {
             width: 100%;
             height: 100%;
-            border-radius: 0;
+            border-radius: var(--radius-md);
         }
 
         .option-card:hover {
@@ -535,25 +526,43 @@
             box-shadow: var(--shadow-md);
         }
 
+        .option-card span {
+            position: relative;
+            z-index: 1;
+        }
+
         .option-card.selected {
             border-color: var(--primary-color);
-            background: var(--primary-light);
-            color: white;
+            background: rgba(102, 126, 234, 0.1);
+            color: var(--primary-color);
         }
 
         .option-card.correct {
             border-color: var(--success-color);
-            background: var(--success-light);
-            color: white;
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success-color);
+            animation: bounce 0.5s ease;
         }
 
         .option-card.incorrect {
             border-color: var(--error-color);
-            background: var(--error-light);
-            color: white;
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--error-color);
+            animation: shake 0.5s ease;
         }
 
-        /* 拼写输入 */
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        /* 拼写区域 */
         .spell-section {
             text-align: center;
             padding: 20px 0;
@@ -565,7 +574,7 @@
             padding: 16px 20px;
             font-size: 1.2rem;
             border: 3px solid var(--border-color);
-            border-radius: var(--radius-lg);
+            border-radius: var(--radius-md);
             text-align: center;
             transition: all 0.3s ease;
             background: var(--card-bg);
@@ -585,7 +594,7 @@
             flex-wrap: wrap;
         }
 
-        /* 听音题 */
+        /* 音频控制 */
         .audio-controls {
             display: flex;
             justify-content: center;
@@ -599,7 +608,7 @@
             color: white;
             border: none;
             padding: 14px 24px;
-            border-radius: var(--radius-lg);
+            border-radius: var(--radius-md);
             cursor: pointer;
             font-weight: 700;
             font-size: 1rem;
@@ -608,6 +617,8 @@
             align-items: center;
             gap: 8px;
             box-shadow: var(--shadow-md);
+            min-height: 60px;
+            touch-action: manipulation;
         }
 
         .audio-btn:hover {
@@ -653,7 +664,7 @@
             font-style: italic;
             margin: 20px 0;
             padding: 15px;
-            background: var(--border-light);
+            background: var(--border-color);
             border-radius: var(--radius-md);
         }
 
@@ -661,14 +672,15 @@
         .progress-container {
             background: var(--card-bg);
             backdrop-filter: blur(10px);
-            border-radius: var(--radius-xl);
+            border-radius: var(--radius-lg);
             padding: 24px;
-            box-shadow: var(--shadow-lg);
-            border: 1px solid var(--border-light);
+            box-shadow: var(--shadow-md);
+            margin-bottom: 30px;
+            border: 1px solid var(--border-color);
         }
 
         .progress-bar {
-            background: var(--border-light);
+            background: var(--border-color);
             height: 12px;
             border-radius: 6px;
             overflow: hidden;
@@ -692,7 +704,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
             animation: shimmer 2s infinite;
         }
 
@@ -716,27 +728,13 @@
             background: var(--card-bg);
             backdrop-filter: blur(10px);
             padding: 40px;
-            border-radius: var(--radius-xl);
-            box-shadow: var(--shadow-xl);
-            z-index: 1000;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            z-index: 10000;
             text-align: center;
             min-width: 350px;
-            border: 3px solid var(--border-light);
+            border: 3px solid var(--border-color);
             animation: feedbackPop 0.3s ease;
-        }
-
-        @keyframes feedbackPop {
-            0% {
-                transform: translate(-50%, -50%) scale(0.8);
-                opacity: 0;
-            }
-            50% {
-                transform: translate(-50%, -50%) scale(1.05);
-            }
-            100% {
-                transform: translate(-50%, -50%) scale(1);
-                opacity: 1;
-            }
         }
 
         .feedback-message.success {
@@ -747,17 +745,28 @@
             border-color: var(--error-color);
         }
 
+        .feedback-message.info {
+            border-color: var(--primary-color);
+        }
+
+        @keyframes feedbackPop {
+            0% {
+                transform: translate(-50%, -50%) scale(0.8);
+                opacity: 0;
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(1.05);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+        }
+
         .feedback-icon {
             font-size: 3rem;
             margin-bottom: 15px;
-        }
-
-        .feedback-message.success .feedback-icon {
-            color: var(--success-color);
-        }
-
-        .feedback-message.error .feedback-icon {
-            color: var(--error-color);
         }
 
         .feedback-text {
@@ -772,7 +781,7 @@
             color: var(--text-secondary);
         }
 
-        /* 结算界面 */
+        /* 结果屏幕 */
         .result-screen {
             max-width: 700px;
             margin: 60px auto;
@@ -782,295 +791,65 @@
         .result-header {
             background: var(--card-bg);
             backdrop-filter: blur(10px);
-            border-radius: var(--radius-xl);
+            border-radius: var(--radius-lg);
             padding: 50px 40px;
-            box-shadow: var(--shadow-xl);
+            box-shadow: var(--shadow-lg);
             margin-bottom: 30px;
-            border: 1px solid var(--border-light);
+            border: 1px solid var(--border-color);
             position: relative;
             overflow: hidden;
         }
 
-        .result-header::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: conic-gradient(from 0deg, var(--primary-color), var(--success-color), var(--warning-color), var(--primary-color));
-            opacity: 0.1;
-            animation: rotate 20s linear infinite;
-        }
-
-        @keyframes rotate {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-
         .result-title {
-            font-size: 2.5rem;
+            font-size: 2rem;
             font-weight: 800;
-            color: var(--primary-color);
+            color: var(--text-primary);
             margin-bottom: 20px;
-            position: relative;
-            z-index: 1;
         }
 
         .final-score {
-            font-size: 4rem;
-            font-weight: 900;
-            color: var(--text-primary);
-            margin-bottom: 10px;
+            font-size: 3.5rem;
+            font-weight: 800;
+            color: var(--primary-color);
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
-            position: relative;
-            z-index: 1;
-        }
-
-        .score-label {
-            font-size: 1.2rem;
-            color: var(--text-secondary);
-            font-weight: 600;
-            position: relative;
-            z-index: 1;
+            margin-bottom: 20px;
         }
 
         .result-stats {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            grid-template-columns: repeat(3, 1fr);
             gap: 20px;
             margin-bottom: 30px;
         }
 
-        .result-stat-card {
-            background: var(--card-bg);
-            backdrop-filter: blur(10px);
-            border: 2px solid var(--border-light);
-            border-radius: var(--radius-lg);
-            padding: 25px 20px;
-            box-shadow: var(--shadow-md);
-            transition: all 0.3s ease;
-        }
-
-        .result-stat-card:hover {
-            transform: translateY(-3px);
-            box-shadow: var(--shadow-lg);
-            border-color: var(--primary-color);
-        }
-
-        .result-stat-value {
-            font-size: 2rem;
-            font-weight: 800;
-            color: var(--primary-color);
-            margin-bottom: 5px;
+        .result-stat {
+            text-align: center;
         }
 
         .result-stat-label {
-            color: var(--text-secondary);
             font-size: 0.9rem;
-            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 5px;
         }
 
-        .achievements-section {
-            background: var(--card-bg);
-            backdrop-filter: blur(10px);
-            border-radius: var(--radius-xl);
-            padding: 30px;
-            margin-bottom: 30px;
-            box-shadow: var(--shadow-lg);
-            border: 1px solid var(--border-light);
-        }
-
-        .achievements-title {
+        .result-stat-value {
             font-size: 1.5rem;
             font-weight: 700;
             color: var(--text-primary);
-            margin-bottom: 20px;
-        }
-
-        .achievements-list {
-            display: flex;
-            justify-content: center;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-
-        .achievement-badge {
-            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-            color: white;
-            padding: 10px 20px;
-            border-radius: 25px;
-            font-size: 1rem;
-            font-weight: 700;
-            box-shadow: var(--shadow-md);
-            transition: all 0.3s ease;
-        }
-
-        .achievement-badge:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-lg);
-        }
-
-        .result-actions {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            flex-wrap: wrap;
-        }
-
-        /* 设置界面 */
-        .settings-screen {
-            max-width: 800px;
-            margin: 40px auto;
-        }
-
-        .settings-container {
-            background: var(--card-bg);
-            backdrop-filter: blur(10px);
-            border-radius: var(--radius-xl);
-            padding: 40px;
-            box-shadow: var(--shadow-xl);
-            border: 1px solid var(--border-light);
-        }
-
-        .settings-header {
-            text-align: center;
-            margin-bottom: 40px;
-        }
-
-        .settings-title {
-            font-size: 2rem;
-            font-weight: 800;
-            color: var(--primary-color);
-            margin-bottom: 10px;
-        }
-
-        .settings-subtitle {
-            color: var(--text-secondary);
-            font-size: 1.1rem;
-        }
-
-        .settings-group {
-            margin-bottom: 35px;
-        }
-
-        .settings-group-title {
-            font-size: 1.2rem;
-            font-weight: 700;
-            color: var(--text-primary);
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .settings-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 16px 20px;
-            background: var(--border-light);
-            border-radius: var(--radius-md);
-            margin-bottom: 12px;
-            transition: all 0.3s ease;
-        }
-
-        .settings-item:hover {
-            background: var(--border-color);
-            transform: translateX(5px);
-        }
-
-        .settings-label {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-
-        .settings-control {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .toggle-switch {
-            position: relative;
-            width: 50px;
-            height: 26px;
-            background: var(--border-color);
-            border-radius: 13px;
-            cursor: pointer;
-            transition: background 0.3s ease;
-        }
-
-        .toggle-switch.active {
-            background: var(--success-color);
-        }
-
-        .toggle-switch::after {
-            content: '';
-            position: absolute;
-            top: 3px;
-            left: 3px;
-            width: 20px;
-            height: 20px;
-            background: white;
-            border-radius: 50%;
-            transition: transform 0.3s ease;
-            box-shadow: var(--shadow-sm);
-        }
-
-        .toggle-switch.active::after {
-            transform: translateX(24px);
-        }
-
-        .select-control {
-            padding: 8px 16px;
-            border: 2px solid var(--border-color);
-            border-radius: var(--radius-sm);
-            background: var(--card-bg);
-            color: var(--text-primary);
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .select-control:hover {
-            border-color: var(--primary-color);
-        }
-
-        .select-control:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-
-        .settings-actions {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            margin-top: 40px;
-            padding-top: 30px;
-            border-top: 2px solid var(--border-light);
         }
 
         /* 响应式设计 */
         @media (max-width: 768px) {
             .container {
-                padding: 15px;
+                padding: 10px;
             }
 
             .main-card {
-                padding: 40px 25px;
+                padding: 30px 20px;
             }
 
             .logo {
-                font-size: 3rem;
-            }
-
-            .subtitle {
-                font-size: 1.2rem;
+                font-size: 2.5rem;
             }
 
             .features-grid {
@@ -1078,25 +857,50 @@
                 gap: 15px;
             }
 
-            .feature-card {
-                padding: 20px 15px;
+            .btn {
+                padding: 16px 32px;
+                font-size: 1.1rem;
+                min-width: 120px;
+                min-height: 44px;
+                margin: 5px;
+                touch-action: manipulation;
             }
 
-            .game-stats {
-                flex-direction: column;
-                gap: 15px;
-                text-align: center;
+            .audio-btn {
+                width: 100%;
+                padding: 20px 24px;
+                font-size: 1.2rem;
+                min-height: 60px;
             }
 
-            .stat-group {
-                justify-content: center;
+            .option-card {
+                padding: 16px 12px;
+                font-size: 1.1rem;
+                min-height: 60px;
             }
 
-            .options-grid {
-                grid-template-columns: 1fr;
+            .question-text {
+                font-size: 1.3rem;
+                margin: 20px 0;
             }
 
-            .audio-controls {
+            .pronunciation-display {
+                font-size: 1rem;
+                padding: 12px;
+                margin: 15px 0;
+            }
+
+            .game-header {
+                padding: 15px;
+                margin-bottom: 20px;
+            }
+
+            .question-container {
+                padding: 25px 20px;
+                margin-bottom: 20px;
+            }
+
+            .nav-menu {
                 flex-direction: column;
                 align-items: center;
             }
@@ -1117,54 +921,6 @@
                 grid-template-columns: 1fr;
             }
 
-            .settings-item {
-                flex-direction: column;
-                gap: 10px;
-                text-align: center;
-            }
-
-            .nav-menu {
-                flex-direction: column;
-                align-items: center;
-            }
-
-            /* 移动端按钮和触摸优化 */
-            .btn {
-                padding: 16px 32px;
-                font-size: 1.1rem;
-                min-width: 120px;
-                min-height: 44px; /* iOS推荐的最小触摸目标 */
-                margin: 5px;
-                touch-action: manipulation;
-            }
-
-            .audio-btn {
-                width: 100%;
-                padding: 20px 24px;
-                font-size: 1.2rem;
-                min-height: 60px;
-                touch-action: manipulation;
-            }
-
-            .option-card {
-                padding: 16px 12px;
-                font-size: 1.1rem;
-                min-height: 60px;
-                touch-action: manipulation;
-            }
-
-            .question-text {
-                font-size: 1.3rem;
-                margin: 20px 0;
-            }
-
-            .pronunciation-display {
-                font-size: 1rem;
-                padding: 12px;
-                margin: 15px 0;
-            }
-
-            /* 移动端反馈消息优化 */
             .feedback-message {
                 width: 90%;
                 max-width: 350px;
@@ -1172,43 +928,13 @@
                 font-size: 1.1rem;
             }
 
-            /* 移动端滚动优化 */
             body {
                 -webkit-overflow-scrolling: touch;
                 overscroll-behavior: contain;
             }
-
-            /* 游戏界面移动端优化 */
-            .game-header {
-                padding: 15px;
-                margin-bottom: 20px;
-            }
-
-            .question-container {
-                padding: 25px 20px;
-                margin-bottom: 20px;
-            }
-
-            .game-screen {
-                max-width: 100%;
-                margin: 20px auto;
-            }
-
-            .stats-container {
-                padding: 15px;
-            }
-
-            .progress-container {
-                padding: 20px 15px;
-            }
         }
 
-        /* 小屏幕手机优化 */
         @media (max-width: 480px) {
-            .container {
-                padding: 8px;
-            }
-
             .main-card {
                 padding: 20px 15px;
             }
@@ -1237,56 +963,29 @@
                 padding: 14px 10px;
                 font-size: 1rem;
             }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
         }
 
-        /* 动画和交互效果 */
+        /* 隐藏类 */
+        .hidden {
+            display: none !important;
+        }
+
+        /* 动画类 */
         .pulse {
             animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
         }
 
         .shake {
             animation: shake 0.5s ease;
         }
-
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
-        }
-
-        .bounce {
-            animation: bounce 0.5s ease;
-        }
-
-        @keyframes bounce {
-            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-            40% { transform: translateY(-10px); }
-            60% { transform: translateY(-5px); }
-        }
-
-        /* 工具类 */
-        .text-center { text-align: center; }
-        .flex { display: flex; }
-        .items-center { align-items: center; }
-        .justify-center { justify-content: center; }
-        .justify-between { justify-content: space-between; }
-        .gap-2 { gap: 8px; }
-        .gap-4 { gap: 16px; }
-        .gap-8 { gap: 32px; }
-        .mb-4 { margin-bottom: 16px; }
-        .mb-8 { margin-bottom: 32px; }
-        .mt-4 { margin-top: 16px; }
-        .mt-8 { margin-top: 32px; }
     </style>
 </head>
 <body>
-    <!-- 主界面 -->
+    <!-- 主屏幕 -->
     <section id="homeScreen" class="screen">
         <div class="home-screen">
             <div class="main-card">
@@ -1295,7 +994,7 @@
                         <span>Fun</span><span>Words</span>
                     </div>
                     <div class="subtitle">高考趣味背单词</div>
-                    <div class="version-tag">v2.0 全新版本</div>
+                    <div class="version-tag">v2.4 显示修复版</div>
                 </div>
 
                 <div class="features-grid">
@@ -1329,64 +1028,57 @@
                     <div class="high-score" id="highScore">0</div>
                 </div>
 
-                <button class="btn btn-primary pulse" onclick="startGame()">
-                    <span>🚀</span>
-                    <span>开始挑战</span>
-                </button>
-
-                <nav class="nav-menu">
-                    <button class="nav-btn" onclick="showSettings()">
-                        <span>⚙️</span>
-                        <span>游戏设置</span>
+                <div class="nav-menu">
+                    <button class="btn btn-primary" onclick="startGame()">
+                        <span>🎮</span>
+                        <span>开始游戏</span>
                     </button>
-                    <button class="nav-btn" onclick="showHelp()">
-                        <span>📖</span>
+                    <button class="btn btn-secondary" onclick="showHelp()">
+                        <span>❓</span>
                         <span>游戏说明</span>
                     </button>
-                    <button class="nav-btn" onclick="showLeaderboard()">
+                    <button class="btn btn-secondary" onclick="showLeaderboard()">
                         <span>📊</span>
                         <span>排行榜</span>
                     </button>
-                    <button class="nav-btn" onclick="showProfile()">
+                    <button class="btn btn-secondary" onclick="showProfile()">
                         <span>👤</span>
                         <span>个人中心</span>
                     </button>
-                </nav>
+                </div>
             </div>
         </div>
     </section>
 
-    <!-- 游戏界面 -->
+    <!-- 游戏屏幕 -->
     <section id="gameScreen" class="screen hidden">
         <div class="game-screen">
             <div class="game-header">
                 <div class="game-stats">
                     <div class="stat-group">
                         <div class="stat-item">
+                            <div class="stat-label">题目</div>
+                            <div class="stat-value" id="questionProgress">1/10</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">得分</div>
+                            <div class="stat-value" id="currentScore">0</div>
+                        </div>
+                    </div>
+                    <div class="stat-group">
+                        <div class="stat-item">
                             <div class="stat-label">生命值</div>
-                            <div class="stat-value lives-container" id="livesDisplay">
+                            <div class="lives-container" id="livesContainer">
                                 <span class="heart">❤️</span>
                                 <span class="heart">❤️</span>
                                 <span class="heart">❤️</span>
                             </div>
                         </div>
                         <div class="stat-item">
-                            <div class="stat-label">分数</div>
-                            <div class="stat-value" id="scoreDisplay">0</div>
-                        </div>
-                        <div class="stat-item">
                             <div class="stat-label">连击</div>
-                            <div class="stat-value" id="streakDisplay">0</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-label">题目</div>
-                            <div class="stat-value" id="questionCount">1/10</div>
+                            <div class="stat-value" id="streakCount">0</div>
                         </div>
                     </div>
-                    <button class="btn btn-secondary" onclick="pauseGame()">
-                        <span>⏸️</span>
-                        <span>暂停</span>
-                    </button>
                 </div>
             </div>
 
@@ -1396,11 +1088,8 @@
                         <span>📝</span>
                         <span>选择题</span>
                     </div>
-                    <div class="question-progress" id="questionProgress">
-                        进度: 10%
-                    </div>
+                    <div class="question-progress" id="overallProgress">进度: 10%</div>
                 </div>
-
                 <div class="question-text" id="questionText">
                     选择单词 "beautiful" 的正确含义
                 </div>
@@ -1415,17 +1104,15 @@
                     <div class="question-text">
                         请拼写单词: "<span id="spellMeaning">重要的，重大的</span>"
                     </div>
-                    <input type="text" class="spell-input" id="spellInput"
-                           placeholder="请输入英文单词"
-                           onkeypress="if(event.key==='Enter') submitSpellAnswer()">
+                    <input type="text" class="spell-input" id="spellInput" placeholder="请输入完整的英文单词" autocomplete="off">
                     <div class="spell-actions">
-                        <button class="btn btn-secondary" onclick="showHint()">
-                            <span>💡</span>
-                            <span>提示</span>
-                        </button>
                         <button class="btn btn-primary" onclick="submitSpellAnswer()">
                             <span>✅</span>
                             <span>提交答案</span>
+                        </button>
+                        <button class="btn btn-secondary" onclick="showHint()">
+                            <span>💡</span>
+                            <span>提示</span>
                         </button>
                     </div>
                 </div>
@@ -1441,9 +1128,8 @@
                         <span>慢速播放</span>
                     </button>
                 </div>
-
                 <div class="pronunciation-display hidden" id="pronunciationDisplay">
-                    音标: /bjuːtɪfəl/
+                    音标: /pronunciation/
                 </div>
             </div>
 
@@ -1451,192 +1137,58 @@
                 <div class="progress-bar">
                     <div class="progress-fill" id="progressFill"></div>
                 </div>
-                <div class="progress-text">
-                    题目进度: <span id="progressText">1/10</span>
-                </div>
+                <div class="progress-text" id="progressText">进度: 1/10</div>
+            </div>
+
+            <div class="nav-menu">
+                <button class="btn btn-secondary" onclick="pauseGame()">
+                    <span>⏸️</span>
+                    <span>暂停</span>
+                </button>
+                <button class="btn btn-secondary" onclick="endGame()">
+                    <span>🏁</span>
+                    <span>结束游戏</span>
+                </button>
             </div>
         </div>
     </section>
 
-    <!-- 结算界面 -->
+    <!-- 结果屏幕 -->
     <section id="resultScreen" class="screen hidden">
         <div class="result-screen">
             <div class="result-header">
-                <div class="result-title">🎉 挑战完成!</div>
-                <div class="final-score" id="finalScore">280</div>
-                <div class="score-label">最终得分</div>
+                <h2 class="result-title">🎉 游戏结束！</h2>
+                <div class="final-score" id="finalScore">0</div>
+                <div class="result-stats">
+                    <div class="result-stat">
+                        <div class="result-stat-label">正确率</div>
+                        <div class="result-stat-value" id="accuracyRate">0%</div>
+                    </div>
+                    <div class="result-stat">
+                        <div class="result-stat-label">最高连击</div>
+                        <div class="result-stat-value" id="maxStreakResult">0</div>
+                    </div>
+                    <div class="result-stat">
+                        <div class="result-stat-label">用时</div>
+                        <div class="result-stat-value" id="gameTimeResult">00:00</div>
+                    </div>
+                </div>
+                <div id="achievementsList"></div>
             </div>
 
-            <div class="result-stats">
-                <div class="result-stat-card">
-                    <div class="result-stat-value" id="accuracyRate">85%</div>
-                    <div class="result-stat-label">正确率</div>
-                </div>
-                <div class="result-stat-card">
-                    <div class="result-stat-value" id="maxStreakResult">7</div>
-                    <div class="result-stat-label">最高连击</div>
-                </div>
-                <div class="result-stat-card">
-                    <div class="result-stat-value" id="gameTimeResult">3:45</div>
-                    <div class="result-stat-label">用时</div>
-                </div>
-            </div>
-
-            <div class="achievements-section">
-                <div class="achievements-title">🏆 获得成就</div>
-                <div class="achievements-list" id="achievementsList">
-                    <div class="achievement-badge">🥇 优秀</div>
-                    <div class="achievement-badge">🔥 连击达人</div>
-                </div>
-            </div>
-
-            <div class="result-actions">
+            <div class="nav-menu">
                 <button class="btn btn-primary" onclick="playAgain()">
                     <span>🔄</span>
-                    <span>再来一局</span>
+                    <span>再次挑战</span>
+                </button>
+                <button class="btn btn-secondary" onclick="showDetails()">
+                    <span>📋</span>
+                    <span>查看详情</span>
                 </button>
                 <button class="btn btn-secondary" onclick="backToHome()">
                     <span>🏠</span>
                     <span>返回主页</span>
                 </button>
-                <button class="btn btn-secondary" onclick="showDetails()">
-                    <span>📊</span>
-                    <span>查看详情</span>
-                </button>
-            </div>
-        </div>
-    </section>
-
-    <!-- 设置界面 -->
-    <section id="settingsScreen" class="screen hidden">
-        <div class="settings-screen">
-            <div class="settings-container">
-                <div class="settings-header">
-                    <div class="settings-title">⚙️ 游戏设置</div>
-                    <div class="settings-subtitle">自定义您的游戏体验</div>
-                </div>
-
-                <div class="settings-group">
-                    <div class="settings-group-title">
-                        <span>🔊</span>
-                        <span>音频设置</span>
-                    </div>
-                    <div class="settings-item">
-                        <div class="settings-label">
-                            <span>🔔</span>
-                            <span>音效</span>
-                        </div>
-                        <div class="settings-control">
-                            <div class="toggle-switch active" id="soundToggle" onclick="toggleSetting('sound')"></div>
-                            <span>开启</span>
-                        </div>
-                    </div>
-                    <div class="settings-item">
-                        <div class="settings-label">
-                            <span>🎵</span>
-                            <span>背景音乐</span>
-                        </div>
-                        <div class="settings-control">
-                            <div class="toggle-switch" id="musicToggle" onclick="toggleSetting('music')"></div>
-                            <span>关闭</span>
-                        </div>
-                    </div>
-                    <div class="settings-item">
-                        <div class="settings-label">
-                            <span>🔊</span>
-                            <span>音量</span>
-                        </div>
-                        <div class="settings-control">
-                            <select class="select-control" id="volumeControl">
-                                <option value="low">低</option>
-                                <option value="medium" selected>中</option>
-                                <option value="high">高</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="settings-group">
-                    <div class="settings-group-title">
-                        <span>🎨</span>
-                        <span>外观设置</span>
-                    </div>
-                    <div class="settings-item">
-                        <div class="settings-label">
-                            <span>🎨</span>
-                            <span>主题</span>
-                        </div>
-                        <div class="settings-control">
-                            <select class="select-control" id="themeControl">
-                                <option value="modern" selected>现代风格</option>
-                                <option value="classic">经典风格</option>
-                                <option value="dark">暗黑模式</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="settings-item">
-                        <div class="settings-label">
-                            <span>📱</span>
-                            <span>字体大小</span>
-                        </div>
-                        <div class="settings-control">
-                            <select class="select-control" id="fontSizeControl">
-                                <option value="small">小</option>
-                                <option value="medium" selected>中等</option>
-                                <option value="large">大</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="settings-group">
-                    <div class="settings-group-title">
-                        <span>⚡</span>
-                        <span>游戏设置</span>
-                    </div>
-                    <div class="settings-item">
-                        <div class="settings-label">
-                            <span>🎯</span>
-                            <span>难度</span>
-                        </div>
-                        <div class="settings-control">
-                            <select class="select-control" id="difficultyControl">
-                                <option value="easy">简单</option>
-                                <option value="normal" selected>普通</option>
-                                <option value="hard">困难</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="settings-item">
-                        <div class="settings-label">
-                            <span>📝</span>
-                            <span>题目数量</span>
-                        </div>
-                        <div class="settings-control">
-                            <select class="select-control" id="questionCountControl">
-                                <option value="5">5题</option>
-                                <option value="10" selected>10题</option>
-                                <option value="15">15题</option>
-                                <option value="20">20题</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="settings-actions">
-                    <button class="btn btn-primary" onclick="saveSettings()">
-                        <span>💾</span>
-                        <span>保存设置</span>
-                    </button>
-                    <button class="btn btn-secondary" onclick="resetSettings()">
-                        <span>🔄</span>
-                        <span>重置设置</span>
-                    </button>
-                    <button class="btn btn-secondary" onclick="backToHome()">
-                        <span>🏠</span>
-                        <span>返回主页</span>
-                    </button>
-                </div>
             </div>
         </div>
     </section>
@@ -1677,7 +1229,6 @@
             // 移动端特殊处理
             if (userInitiated) {
                 initAudioContext();
-                // 移动端需要暂停一下再播放
                 if (typeof speechSynthesis.cancel === 'function') {
                     speechSynthesis.cancel();
                 }
@@ -1697,18 +1248,11 @@
             // 移动端优化设置
             const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
             if (isMobile) {
-                currentUtterance.rate = Math.min(speed * 0.9, 1.2); // 移动端语速稍微调慢
-                currentUtterance.pitch = 1.0;
-                currentUtterance.volume = 1.0;
+                currentUtterance.rate = Math.min(speed * 0.9, 1.2);
             }
 
-            // 添加事件监听器
             currentUtterance.onstart = () => {
                 console.log('开始播放语音:', word);
-                // 移动端添加播放状态提示
-                if (isMobile) {
-                    showFeedback('info', `🔊 正在播放: ${word}`);
-                }
             };
 
             currentUtterance.onend = () => {
@@ -1724,12 +1268,10 @@
             };
 
             try {
-                // 移动端特殊处理：确保语音合成已准备好
                 if (speechSynthesis.speaking) {
                     speechSynthesis.cancel();
                 }
 
-                // 延迟一点时间再播放，给移动端准备时间
                 setTimeout(() => {
                     if (currentUtterance) {
                         speechSynthesis.speak(currentUtterance);
@@ -1744,46 +1286,6 @@
                 return false;
             }
         }
-
-        // 移动端音频激活函数
-        function activateAudio() {
-            initAudioContext();
-
-            // 播放一个静默音来激活音频
-            if (audioContext) {
-                const oscillator = audioContext.createOscillator();
-                const gainNode = audioContext.createGain();
-                gainNode.gain.value = 0; // 静音
-                oscillator.connect(gainNode);
-                gainNode.connect(audioContext.destination);
-                oscillator.start();
-                oscillator.stop(audioContext.currentTime + 0.01);
-            }
-        }
-
-        // 词汇库
-        const vocabulary = [
-            { word: 'beautiful', meaning: '美丽的', pronunciation: '/ˈbjuːtɪfəl/' },
-            { word: 'important', meaning: '重要的', pronunciation: '/ɪmˈpɔːrtənt/' },
-            { word: 'education', meaning: '教育', pronunciation: '/ˌedʒuˈkeɪʃən/' },
-            { word: 'technology', meaning: '技术', pronunciation: '/tekˈnɑːlədʒi/' },
-            { word: 'environment', meaning: '环境', pronunciation: '/ɪnˈvaɪrənmənt/' },
-            { word: 'development', meaning: '发展', pronunciation: '/dɪˈveləpmənt/' },
-            { word: 'information', meaning: '信息', pronunciation: '/ˌɪnfərˈmeɪʃən/' },
-            { word: 'government', meaning: '政府', pronunciation: '/ˈɡʌvərnmənt/' },
-            { word: 'economy', meaning: '经济', pronunciation: '/ɪˈkɑːnəmi/' },
-            { word: 'culture', meaning: '文化', pronunciation: '/ˈkʌltʃər/' },
-            { word: 'history', meaning: '历史', pronunciation: '/ˈhɪstəri/' },
-            { word: 'science', meaning: '科学', pronunciation: '/ˈsaɪəns/' },
-            { word: 'mathematics', meaning: '数学', pronunciation: '/ˌmæθəˈmætɪks/' },
-            { word: 'literature', meaning: '文学', pronunciation: '/ˈlɪtərətʃər/' },
-            { word: 'philosophy', meaning: '哲学', pronunciation: '/fɪˈlɑːsəfi/' },
-            { word: 'psychology', meaning: '心理学', pronunciation: '/saɪˈkɑːlədʒi/' },
-            { word: 'sociology', meaning: '社会学', pronunciation: '/ˌsoʊsiˈɑːlədʒi/' },
-            { word: 'chemistry', meaning: '化学', pronunciation: '/ˈkemɪstri/' },
-            { word: 'physics', meaning: '物理学', pronunciation: '/ˈfɪzɪks/' },
-            { word: 'biology', meaning: '生物学', pronunciation: '/baɪˈɑːlədʒi/' }
-        ];
 
         // 游戏状态
         let gameState = {
@@ -1811,175 +1313,31 @@
             questionCount: 10
         };
 
-        // 初始化
-        function init() {
-            try {
-                // 基础初始化
-                if (typeof loadSettings === 'function') {
-                    loadSettings();
-                }
-                if (typeof loadHighScore === 'function') {
-                    loadHighScore();
-                }
+        // 词汇库
+        const vocabulary = [
+            { word: 'beautiful', meaning: '美丽的', pronunciation: '/ˈbjuːtɪfəl/' },
+            { word: 'important', meaning: '重要的', pronunciation: '/ɪmˈpɔːrtənt/' },
+            { word: 'education', meaning: '教育', pronunciation: '/ˌedʒuˈkeɪʃən/' },
+            { word: 'technology', meaning: '技术', pronunciation: '/tekˈnɑːlədʒi/' },
+            { word: 'environment', meaning: '环境', pronunciation: '/ɪnˈvaɪrənmənt/' },
+            { word: 'development', meaning: '发展', pronunciation: '/dɪˈveləpmənt/' },
+            { word: 'information', meaning: '信息', pronunciation: '/ˌɪnfərˈmeɪʃən/' },
+            { word: 'government', meaning: '政府', pronunciation: '/ˈɡʌvərnmənt/' },
+            { word: 'economy', meaning: '经济', pronunciation: '/ɪˈkɑːnəmi/' },
+            { word: 'culture', meaning: '文化', pronunciation: '/ˈkʌltʃər/' },
+            { word: 'history', meaning: '历史', pronunciation: '/ˈhɪstəri/' },
+            { word: 'science', meaning: '科学', pronunciation: '/ˈsaɪəns/' },
+            { word: 'mathematics', meaning: '数学', pronunciation: '/ˌmæθəˈmætɪks/' },
+            { word: 'literature', meaning: '文学', pronunciation: '/ˈlɪtərətʃər/' },
+            { word: 'philosophy', meaning: '哲学', pronunciation: '/fɪˈlɑːsəfi/' },
+            { word: 'psychology', meaning: '心理学', pronunciation: '/saɪˈkɑːlədʒi/' },
+            { word: 'sociology', meaning: '社会学', pronunciation: '/ˌsoʊsiˈɑːlədʒi/' },
+            { word: 'chemistry', meaning: '化学', pronunciation: '/ˈkemɪstri/' },
+            { word: 'physics', meaning: '物理学', pronunciation: '/ˈfɪzɪks/' },
+            { word: 'biology', meaning: '生物学', pronunciation: '/baɪˈɑːlədʒi/' }
+        ];
 
-                // 添加移动端音频激活事件
-                if (typeof setupMobileAudioSupport === 'function') {
-                    setupMobileAudioSupport();
-                }
-
-                // 检查并显示版本信息
-                if (typeof checkVersion === 'function') {
-                    checkVersion();
-                }
-
-                console.log('FunWords 移动端优化版本 v2.3 初始化完成');
-            } catch (error) {
-                console.error('初始化出错:', error);
-                // 尝试显示错误信息给用户
-                document.body.innerHTML = `
-                    <div style="display: flex; justify-content: center; align-items: center; height: 100vh; font-family: Arial, sans-serif;">
-                        <div style="text-align: center; padding: 20px; background: white; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                            <h2 style="color: #ef4444;">游戏加载出错</h2>
-                            <p>请刷新页面重试，或检查网络连接。</p>
-                            <button onclick="location.reload()" style="padding: 10px 20px; background: #3b82f6; color: white; border: none; border-radius: 5px; cursor: pointer;">刷新页面</button>
-                        </div>
-                    </div>
-                `;
-            }
-        }
-
-        // 版本检查
-        function checkVersion() {
-            try {
-                const currentVersion = '2.3';
-                const lastVersion = localStorage.getItem('funwords_version');
-
-                if (lastVersion !== currentVersion) {
-                    localStorage.setItem('funwords_version', currentVersion);
-
-                    // 显示更新提示
-                    setTimeout(() => {
-                        if (typeof showFeedback === 'function') {
-                            showFeedback('success', `🎉 游戏已更新到 v${currentVersion}`);
-                        }
-                    }, 500);
-
-                    // 清除可能的缓存问题
-                    setTimeout(() => {
-                        if (typeof showFeedback === 'function') {
-                            showFeedback('info', '📱 如遇显示问题，请强制刷新页面');
-                        }
-                    }, 2500);
-                }
-            } catch (error) {
-                console.error('版本检查出错:', error);
-            }
-        }
-
-        // 设置移动端音频支持
-        function setupMobileAudioSupport() {
-            // 检测是否是移动设备
-            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-
-            if (isMobile) {
-                console.log('检测到移动设备，准备音频支持...');
-
-                // 强制初始化语音合成
-                try {
-                    if ('speechSynthesis' in window) {
-                        // 尝试获取语音列表来初始化语音合成
-                        const voices = speechSynthesis.getVoices();
-                        if (voices.length === 0) {
-                            // 如果没有语音，等待语音列表加载
-                            speechSynthesis.onvoiceschanged = () => {
-                                console.log('语音合成已初始化，语音数量:', speechSynthesis.getVoices().length);
-                            };
-                        } else {
-                            console.log('语音合成已初始化，语音数量:', voices.length);
-                        }
-                    }
-                } catch (error) {
-                    console.error('语音合成初始化失败:', error);
-                }
-
-                // 创建多个激活事件确保音频能够启动
-                const activateAudioOnInteraction = (event) => {
-                    console.log('用户交互检测到，激活音频...');
-
-                    // 激活音频上下文
-                    initAudioContext();
-
-                    // 强制初始化语音合成
-                    if ('speechSynthesis' in window) {
-                        const testUtterance = new SpeechSynthesisUtterance('');
-                        testUtterance.volume = 0; // 静音测试
-                        speechSynthesis.speak(testUtterance);
-                        setTimeout(() => speechSynthesis.cancel(), 100);
-                    }
-
-                    // 移除事件监听器
-                    document.removeEventListener('touchstart', activateAudioOnInteraction);
-                    document.removeEventListener('click', activateAudioOnInteraction);
-                    document.removeEventListener('keydown', activateAudioOnInteraction);
-
-                    console.log('移动端音频已激活');
-                    showFeedback('success', '🔊 音频功能已激活');
-                };
-
-                // 添加多种交互事件
-                document.addEventListener('touchstart', activateAudioOnInteraction, { once: true });
-                document.addEventListener('click', activateAudioOnInteraction, { once: true });
-                document.addEventListener('keydown', activateAudioOnInteraction, { once: true });
-
-                // 显示激活提示
-                setTimeout(() => {
-                    showFeedback('info', '📱 请点击屏幕任意位置激活音频功能');
-                }, 1000);
-            }
-        }
-
-        function loadSettings() {
-            const savedSettings = localStorage.getItem('funwords_settings');
-            if (savedSettings) {
-                settings = { ...settings, ...JSON.parse(savedSettings) };
-                updateSettingsUI();
-            }
-        }
-
-        function saveSettings() {
-            localStorage.setItem('funwords_settings', JSON.stringify(settings));
-            showFeedback('success', '设置已保存！');
-        }
-
-        function updateSettingsUI() {
-            // 更新设置界面
-            const soundToggle = document.getElementById('soundToggle');
-            const musicToggle = document.getElementById('musicToggle');
-
-            if (soundToggle) {
-                soundToggle.classList.toggle('active', settings.sound);
-            }
-            if (musicToggle) {
-                musicToggle.classList.toggle('active', settings.music);
-            }
-        }
-
-        function loadHighScore() {
-            const highScore = localStorage.getItem('funwords_highscore') || '0';
-            document.getElementById('highScore').textContent = highScore;
-        }
-
-        function saveHighScore(score) {
-            const currentHighScore = parseInt(localStorage.getItem('funwords_highscore') || '0');
-            if (score > currentHighScore) {
-                localStorage.setItem('funwords_highscore', score);
-                document.getElementById('highScore').textContent = score;
-                return true;
-            }
-            return false;
-        }
-
-        // 界面切换
+        // 显示屏幕
         function showScreen(screenId) {
             document.querySelectorAll('.screen').forEach(screen => {
                 screen.classList.add('hidden');
@@ -1987,10 +1345,33 @@
             document.getElementById(screenId).classList.remove('hidden');
         }
 
+        // 显示反馈
+        function showFeedback(type, message) {
+            const existingFeedback = document.querySelector('.feedback-message');
+            if (existingFeedback) {
+                existingFeedback.remove();
+            }
+
+            const feedback = document.createElement('div');
+            feedback.className = `feedback-message ${type}`;
+            feedback.innerHTML = `
+                <div class="feedback-icon">${type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️'}</div>
+                <div class="feedback-text">${message}</div>
+                <div class="feedback-details">点击任意位置继续</div>
+            `;
+
+            document.body.appendChild(feedback);
+
+            setTimeout(() => {
+                feedback.remove();
+            }, 2000);
+        }
+
         // 开始游戏
         function startGame() {
-            console.log('🚀 开始新游戏');
+            console.log('🎮 开始新游戏');
 
+            // 重置游戏状态
             gameState = {
                 lives: 3,
                 score: 0,
@@ -2006,17 +1387,20 @@
             };
 
             showScreen('gameScreen');
-            nextQuestion();
+            showQuestion();
         }
 
-        // 下一题
-        function nextQuestion() {
-            if (gameState.currentQuestion >= gameState.totalQuestions) {
-                endGame();
-                return;
-            }
+        // 显示题目
+        function showQuestion() {
+            console.log('📝 显示题目', gameState.currentQuestion + 1);
 
-            gameState.currentQuestion++;
+            // 隐藏所有题型
+            document.getElementById('choiceOptions').classList.add('hidden');
+            document.getElementById('spellSection').classList.add('hidden');
+            document.getElementById('audioControls').classList.add('hidden');
+            document.getElementById('pronunciationDisplay').classList.add('hidden');
+
+            // 生成新题目
             const randomWord = vocabulary[Math.floor(Math.random() * vocabulary.length)];
             gameState.currentWord = randomWord;
 
@@ -2025,19 +1409,6 @@
             gameState.questionType = types[Math.floor(Math.random() * types.length)];
 
             updateGameDisplay();
-            showQuestion();
-        }
-
-        // 显示题目
-        function showQuestion() {
-            // 隐藏所有题型并清除旧内容
-            const choiceOptions = document.getElementById('choiceOptions');
-            choiceOptions.classList.add('hidden');
-            choiceOptions.innerHTML = ''; // 清除旧的选项
-
-            document.getElementById('spellSection').classList.add('hidden');
-            document.getElementById('audioControls').classList.add('hidden');
-            document.getElementById('pronunciationDisplay').classList.add('hidden');
 
             const questionTypeEl = document.getElementById('questionType');
             const questionTextEl = document.getElementById('questionText');
@@ -2050,9 +1421,9 @@
                     break;
                 case 'spell':
                     questionTypeEl.innerHTML = '<span>✏️</span><span>拼写题</span>';
-                    questionTextEl.textContent = `请拼写单词`;
-                    document.getElementById('spellMeaning').textContent = gameState.currentWord.meaning;
+                    questionTextEl.textContent = `请拼写单词: "${gameState.currentWord.meaning}"`;
                     document.getElementById('spellSection').classList.remove('hidden');
+                    document.getElementById('spellMeaning').textContent = gameState.currentWord.meaning;
                     document.getElementById('spellInput').value = '';
                     document.getElementById('spellInput').focus();
                     break;
@@ -2063,10 +1434,9 @@
                     document.getElementById('pronunciationDisplay').textContent = `音标: ${gameState.currentWord.pronunciation}`;
                     showAudioOptions();
 
-                    // 移动端音频提示
+                    // 移动端提示
                     setTimeout(() => {
-                        showFeedback('info', '请点击播放按钮听发音🔊');
-                        // 不自动播放，等待用户点击
+                        showFeedback('info', '📱 请点击播放按钮听发音🔊');
                     }, 500);
                     break;
             }
@@ -2115,7 +1485,7 @@
                 optionCard.textContent = `${String.fromCharCode(65 + index)}. ${option}`;
                 optionCard.onclick = () => {
                     if (settings.sound) {
-                        speakWord(option, 1.0);
+                        speakWord(option, 1.0, true);
                     }
                     setTimeout(() => checkAudioAnswer(option, optionCard), 1000);
                 };
@@ -2166,20 +1536,20 @@
                 }
             } else {
                 gameState.lives--;
-                gameState.streak = 0;
-
-                const correctAnswer = gameState.questionType === 'spell'
-                    ? gameState.currentWord.word
-                    : gameState.currentWord.meaning;
-
-                showFeedback('error', `答错! 正确答案: ${correctAnswer}`);
+                showFeedback('error', '答错! -1生命值');
 
                 if (element) {
                     element.classList.add('incorrect');
                     element.classList.add('shake');
                 }
+
+                if (gameState.lives <= 0) {
+                    endGame();
+                    return;
+                }
             }
 
+            // 记录答案
             gameState.answers.push({
                 question: gameState.currentQuestion,
                 correct: isCorrect,
@@ -2189,97 +1559,58 @@
 
             updateGameDisplay();
 
+            // 显示下一题或结束游戏
             setTimeout(() => {
-                if (gameState.lives > 0) {
-                    nextQuestion();
+                gameState.currentQuestion++;
+                if (gameState.currentQuestion < gameState.totalQuestions) {
+                    showQuestion();
                 } else {
                     endGame();
                 }
-            }, 2000);
+            }, 1500);
         }
 
         // 更新游戏显示
         function updateGameDisplay() {
-            // 更新生命值
-            const livesDisplay = document.getElementById('livesDisplay');
-            if (livesDisplay) {
-                livesDisplay.innerHTML = '';
-                for (let i = 0; i < 3; i++) {
-                    const heart = document.createElement('span');
-                    heart.className = i < gameState.lives ? 'heart' : 'heart empty';
-                    heart.textContent = i < gameState.lives ? '❤️' : '🤍';
-                    livesDisplay.appendChild(heart);
-                }
-            }
-
-            // 更新其他统计
-            const scoreDisplay = document.getElementById('scoreDisplay');
-            const streakDisplay = document.getElementById('streakDisplay');
-            const questionCount = document.getElementById('questionCount');
-
-            if (scoreDisplay) scoreDisplay.textContent = gameState.score;
-            if (streakDisplay) streakDisplay.textContent = gameState.streak;
-            if (questionCount) questionCount.textContent = `${gameState.currentQuestion}/${gameState.totalQuestions}`;
-
-            // 更新进度
             const progress = (gameState.currentQuestion / gameState.totalQuestions) * 100;
             const progressFill = document.getElementById('progressFill');
             const progressText = document.getElementById('progressText');
             const questionProgress = document.getElementById('questionProgress');
+            const overallProgress = document.getElementById('overallProgress');
+            const currentScore = document.getElementById('currentScore');
+            const streakCount = document.getElementById('streakCount');
+            const livesContainer = document.getElementById('livesContainer');
 
             if (progressFill) progressFill.style.width = `${progress}%`;
-            if (progressText) progressText.textContent = `${gameState.currentQuestion}/${gameState.totalQuestions}`;
-            if (questionProgress) questionProgress.textContent = `进度: ${Math.round(progress)}%`;
-        }
+            if (progressText) progressText.textContent = `进度: ${gameState.currentQuestion}/${gameState.totalQuestions}`;
+            if (questionProgress) questionProgress.textContent = `${gameState.currentQuestion}/${gameState.totalQuestions}`;
+            if (overallProgress) overallProgress.textContent = `进度: ${Math.round(progress)}%`;
+            if (currentScore) currentScore.textContent = gameState.score;
+            if (streakCount) streakCount.textContent = gameState.streak;
 
-        // 显示反馈
-        function showFeedback(type, message) {
-            // 移除现有反馈
-            const existingFeedback = document.querySelector('.feedback-message');
-            if (existingFeedback) {
-                existingFeedback.remove();
-            }
-
-            const feedback = document.createElement('div');
-            feedback.className = `feedback-message ${type}`;
-            feedback.innerHTML = `
-                <div class="feedback-icon">${type === 'success' ? '✅' : '❌'}</div>
-                <div class="feedback-text">${message}</div>
-                <div class="feedback-details">点击任意位置继续</div>
-            `;
-
-            document.body.appendChild(feedback);
-
-            // 点击任意位置关闭反馈
-            setTimeout(() => {
-                feedback.addEventListener('click', () => {
-                    feedback.remove();
-                });
-            }, 100);
-
-            // 自动关闭
-            setTimeout(() => {
-                if (document.body.contains(feedback)) {
-                    feedback.remove();
+            // 更新生命值显示
+            if (livesContainer) {
+                livesContainer.innerHTML = '';
+                for (let i = 0; i < 3; i++) {
+                    const heart = document.createElement('span');
+                    heart.className = i < gameState.lives ? 'heart' : 'heart empty';
+                    heart.textContent = '❤️';
+                    livesContainer.appendChild(heart);
                 }
-            }, 3000);
+            }
         }
 
         // 播放发音
         function playNormalSpeed() {
             console.log('点击了正常速度播放按钮');
             if (gameState.currentWord && settings.sound) {
-                // 确保音频已激活
                 if (!audioInitialized) {
                     initAudioContext();
-                    setupMobileAudioSupport();
                 }
 
-                // 移动端延迟执行
                 setTimeout(() => {
                     const success = speakWord(gameState.currentWord.word, 1.0, true);
                     if (success) {
-                        // 添加按钮反馈效果
                         const btn = event.target.closest('.audio-btn');
                         if (btn) {
                             btn.classList.add('playing');
@@ -2287,25 +1618,19 @@
                         }
                     }
                 }, 100);
-            } else {
-                console.log('游戏状态或设置不允许播放音频');
             }
         }
 
         function playSlowSpeed() {
             console.log('点击了慢速播放按钮');
             if (gameState.currentWord && settings.sound) {
-                // 确保音频已激活
                 if (!audioInitialized) {
                     initAudioContext();
-                    setupMobileAudioSupport();
                 }
 
-                // 移动端延迟执行
                 setTimeout(() => {
                     const success = speakWord(gameState.currentWord.word, 0.7, true);
                     if (success) {
-                        // 添加按钮反馈效果
                         const btn = event.target.closest('.audio-btn');
                         if (btn) {
                             btn.classList.add('playing');
@@ -2313,8 +1638,6 @@
                         }
                     }
                 }, 100);
-            } else {
-                console.log('游戏状态或设置不允许播放音频');
             }
         }
 
@@ -2359,16 +1682,14 @@
             achievementsList.innerHTML = '';
             achievements.forEach(achievement => {
                 const achievementBadge = document.createElement('div');
-                achievementBadge.className = 'achievement-badge';
+                achievementBadge.className = 'feature-card';
                 achievementBadge.textContent = achievement;
+                achievementBadge.style.marginBottom = '10px';
                 achievementsList.appendChild(achievementBadge);
             });
 
             // 保存最高分
-            const isNewHighScore = saveHighScore(gameState.score);
-            if (isNewHighScore) {
-                showFeedback('success', '🎉 新的最高分！');
-            }
+            saveHighScore(gameState.score);
 
             showScreen('resultScreen');
         }
@@ -2402,6 +1723,22 @@
             return achievements;
         }
 
+        // 保存最高分
+        function saveHighScore(score) {
+            const currentHighScore = parseInt(localStorage.getItem('funwords_highscore') || '0');
+            if (score > currentHighScore) {
+                localStorage.setItem('funwords_highscore', score.toString());
+                return true;
+            }
+            return false;
+        }
+
+        // 加载最高分
+        function loadHighScore() {
+            const highScore = localStorage.getItem('funwords_highscore') || '0';
+            document.getElementById('highScore').textContent = highScore;
+        }
+
         // 结算界面操作
         function playAgain() {
             startGame();
@@ -2419,41 +1756,6 @@
             }).join('\n');
 
             alert(`详细答题记录:\n\n${details}\n\n正确率: ${Math.round((gameState.answers.filter(a => a.correct).length / gameState.answers.length) * 100)}%`);
-        }
-
-        // 设置界面功能
-        function showSettings() {
-            showScreen('settingsScreen');
-        }
-
-        function toggleSetting(setting) {
-            if (setting === 'sound') {
-                settings.sound = !settings.sound;
-                const toggle = document.getElementById('soundToggle');
-                toggle.classList.toggle('active', settings.sound);
-                toggle.nextElementSibling.textContent = settings.sound ? '开启' : '关闭';
-            } else if (setting === 'music') {
-                settings.music = !settings.music;
-                const toggle = document.getElementById('musicToggle');
-                toggle.classList.toggle('active', settings.music);
-                toggle.nextElementSibling.textContent = settings.music ? '开启' : '关闭';
-            }
-        }
-
-        function resetSettings() {
-            if (confirm('确定要重置所有设置吗？')) {
-                settings = {
-                    sound: true,
-                    music: false,
-                    volume: 'medium',
-                    theme: 'modern',
-                    fontSize: 'medium',
-                    difficulty: 'normal',
-                    questionCount: 10
-                };
-                updateSettingsUI();
-                showFeedback('success', '设置已重置！');
-            }
         }
 
         // 主界面功能
@@ -2501,11 +1803,7 @@ FunWords 是一款高考词汇学习游戏:
         }
 
         function showProfile() {
-            try {
-                const savedSettings = localStorage.getItem('funwords_settings');
-                const currentSettings = savedSettings ? JSON.parse(savedSettings) : settings;
-
-                const profileText = `👤 个人中心
+            const profileText = `👤 个人中心
 
 游戏统计:
 • 总游戏次数: ${localStorage.getItem('funwords_games_played') || '0'}
@@ -2513,16 +1811,94 @@ FunWords 是一款高考词汇学习游戏:
 • 累计答对题数: ${localStorage.getItem('funwords_total_correct') || '0'}
 
 设置偏好:
-• 主题: ${currentSettings.theme === 'modern' ? '现代风格' : currentSettings.theme === 'classic' ? '经典风格' : '暗黑模式'}
-• 难度: ${currentSettings.difficulty === 'easy' ? '简单' : currentSettings.difficulty === 'normal' ? '普通' : '困难'}
-• 题目数量: ${currentSettings.questionCount || 10}题
+• 主题: ${settings.theme === 'modern' ? '现代风格' : settings.theme === 'classic' ? '经典风格' : '暗黑模式'}
+• 难度: ${settings.difficulty === 'easy' ? '简单' : settings.difficulty === 'normal' ? '普通' : '困难'}
+• 题目数量: ${settings.questionCount}题
 
 继续努力，成为词汇大师！🏆`;
 
-                alert(profileText);
+            alert(profileText);
+        }
+
+        // 初始化
+        function init() {
+            try {
+                loadHighScore();
+
+                // 添加移动端音频激活事件
+                setupMobileAudioSupport();
+
+                console.log('FunWords 显示修复版本 v2.4 初始化完成');
+                showFeedback('success', '🎉 游戏加载完成！欢迎体验 FunWords！');
             } catch (error) {
-                console.error('显示个人资料出错:', error);
-                alert('👤 个人中心\n\n加载个人资料时出现错误，请重试。');
+                console.error('初始化出错:', error);
+                document.body.innerHTML = `
+                    <div style="display: flex; justify-content: center; align-items: center; height: 100vh; font-family: Arial, sans-serif;">
+                        <div style="text-align: center; padding: 20px; background: white; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                            <h2 style="color: #ef4444;">游戏加载出错</h2>
+                            <p>请刷新页面重试，或检查网络连接。</p>
+                            <button onclick="location.reload()" style="padding: 10px 20px; background: #3b82f6; color: white; border: none; border-radius: 5px; cursor: pointer;">刷新页面</button>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // 设置移动端音频支持
+        function setupMobileAudioSupport() {
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+            if (isMobile) {
+                console.log('检测到移动设备，准备音频支持...');
+
+                // 强制初始化语音合成
+                try {
+                    if ('speechSynthesis' in window) {
+                        const voices = speechSynthesis.getVoices();
+                        if (voices.length === 0) {
+                            speechSynthesis.onvoiceschanged = () => {
+                                console.log('语音合成已初始化，语音数量:', speechSynthesis.getVoices().length);
+                            };
+                        } else {
+                            console.log('语音合成已初始化，语音数量:', voices.length);
+                        }
+                    }
+                } catch (error) {
+                    console.error('语音合成初始化失败:', error);
+                }
+
+                // 创建多个激活事件确保音频能够启动
+                const activateAudioOnInteraction = (event) => {
+                    console.log('用户交互检测到，激活音频...');
+
+                    // 激活音频上下文
+                    initAudioContext();
+
+                    // 强制初始化语音合成
+                    if ('speechSynthesis' in window) {
+                        const testUtterance = new SpeechSynthesisUtterance('');
+                        testUtterance.volume = 0;
+                        speechSynthesis.speak(testUtterance);
+                        setTimeout(() => speechSynthesis.cancel(), 100);
+                    }
+
+                    // 移除事件监听器
+                    document.removeEventListener('touchstart', activateAudioOnInteraction);
+                    document.removeEventListener('click', activateAudioOnInteraction);
+                    document.removeEventListener('keydown', activateAudioOnInteraction);
+
+                    console.log('移动端音频已激活');
+                };
+
+                // 添加多种交互事件
+                document.addEventListener('touchstart', activateAudioOnInteraction, { once: true });
+                document.addEventListener('click', activateAudioOnInteraction, { once: true });
+                document.addEventListener('keydown', activateAudioOnInteraction, { once: true });
+
+                // 显示激活提示
+                setTimeout(() => {
+                    showFeedback('info', '📱 请点击屏幕任意位置激活音频功能');
+                }, 1000);
             }
         }
 
