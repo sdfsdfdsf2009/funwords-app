@@ -6,7 +6,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>FunWords - 高考词汇挑战 v2.1</title>
+    <title>FunWords - 高考词汇挑战 v2.3</title>
     <style>
         * {
             margin: 0;
@@ -1127,6 +1127,116 @@
                 flex-direction: column;
                 align-items: center;
             }
+
+            /* 移动端按钮和触摸优化 */
+            .btn {
+                padding: 16px 32px;
+                font-size: 1.1rem;
+                min-width: 120px;
+                min-height: 44px; /* iOS推荐的最小触摸目标 */
+                margin: 5px;
+                touch-action: manipulation;
+            }
+
+            .audio-btn {
+                width: 100%;
+                padding: 20px 24px;
+                font-size: 1.2rem;
+                min-height: 60px;
+                touch-action: manipulation;
+            }
+
+            .option-card {
+                padding: 16px 12px;
+                font-size: 1.1rem;
+                min-height: 60px;
+                touch-action: manipulation;
+            }
+
+            .question-text {
+                font-size: 1.3rem;
+                margin: 20px 0;
+            }
+
+            .pronunciation-display {
+                font-size: 1rem;
+                padding: 12px;
+                margin: 15px 0;
+            }
+
+            /* 移动端反馈消息优化 */
+            .feedback-message {
+                width: 90%;
+                max-width: 350px;
+                padding: 20px;
+                font-size: 1.1rem;
+            }
+
+            /* 移动端滚动优化 */
+            body {
+                -webkit-overflow-scrolling: touch;
+                overscroll-behavior: contain;
+            }
+
+            /* 游戏界面移动端优化 */
+            .game-header {
+                padding: 15px;
+                margin-bottom: 20px;
+            }
+
+            .question-container {
+                padding: 25px 20px;
+                margin-bottom: 20px;
+            }
+
+            .game-screen {
+                max-width: 100%;
+                margin: 20px auto;
+            }
+
+            .stats-container {
+                padding: 15px;
+            }
+
+            .progress-container {
+                padding: 20px 15px;
+            }
+        }
+
+        /* 小屏幕手机优化 */
+        @media (max-width: 480px) {
+            .container {
+                padding: 8px;
+            }
+
+            .main-card {
+                padding: 20px 15px;
+            }
+
+            .logo {
+                font-size: 2rem;
+            }
+
+            .btn {
+                padding: 14px 24px;
+                font-size: 1rem;
+                width: 100%;
+                max-width: 200px;
+            }
+
+            .audio-btn {
+                padding: 18px 20px;
+                font-size: 1.1rem;
+            }
+
+            .question-text {
+                font-size: 1.2rem;
+            }
+
+            .option-card {
+                padding: 14px 10px;
+                font-size: 1rem;
+            }
         }
 
         /* 动画和交互效果 */
@@ -1564,11 +1674,16 @@
                 return false;
             }
 
-            // 移动端需要用户交互才能播放音频
+            // 移动端特殊处理
             if (userInitiated) {
                 initAudioContext();
+                // 移动端需要暂停一下再播放
+                if (typeof speechSynthesis.cancel === 'function') {
+                    speechSynthesis.cancel();
+                }
             }
 
+            // 清除之前的语音
             if (currentUtterance) {
                 speechSynthesis.cancel();
             }
@@ -1579,26 +1694,53 @@
             currentUtterance.pitch = 1.0;
             currentUtterance.volume = 1.0;
 
+            // 移动端优化设置
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            if (isMobile) {
+                currentUtterance.rate = Math.min(speed * 0.9, 1.2); // 移动端语速稍微调慢
+                currentUtterance.pitch = 1.0;
+                currentUtterance.volume = 1.0;
+            }
+
             // 添加事件监听器
             currentUtterance.onstart = () => {
                 console.log('开始播放语音:', word);
+                // 移动端添加播放状态提示
+                if (isMobile) {
+                    showFeedback('info', `🔊 正在播放: ${word}`);
+                }
             };
 
             currentUtterance.onend = () => {
                 console.log('语音播放完成:', word);
+                currentUtterance = null;
             };
 
             currentUtterance.onerror = (event) => {
                 console.error('语音播放错误:', event.error);
-                showFeedback('error', '语音播放失败，请重试');
+                currentUtterance = null;
+                showFeedback('error', `语音播放失败: ${event.error}`);
+                return false;
             };
 
             try {
-                speechSynthesis.speak(currentUtterance);
+                // 移动端特殊处理：确保语音合成已准备好
+                if (speechSynthesis.speaking) {
+                    speechSynthesis.cancel();
+                }
+
+                // 延迟一点时间再播放，给移动端准备时间
+                setTimeout(() => {
+                    if (currentUtterance) {
+                        speechSynthesis.speak(currentUtterance);
+                    }
+                }, isMobile ? 100 : 0);
+
                 return true;
             } catch (error) {
                 console.error('语音播放失败:', error);
-                showFeedback('error', '语音播放失败，请点击播放按钮');
+                showFeedback('error', '语音播放失败，请重试');
+                currentUtterance = null;
                 return false;
             }
         }
@@ -1690,7 +1832,7 @@
                     checkVersion();
                 }
 
-                console.log('FunWords 全新版本 v2.1 初始化完成');
+                console.log('FunWords 移动端优化版本 v2.3 初始化完成');
             } catch (error) {
                 console.error('初始化出错:', error);
                 // 尝试显示错误信息给用户
@@ -1709,7 +1851,7 @@
         // 版本检查
         function checkVersion() {
             try {
-                const currentVersion = '2.1';
+                const currentVersion = '2.3';
                 const lastVersion = localStorage.getItem('funwords_version');
 
                 if (lastVersion !== currentVersion) {
@@ -1742,16 +1884,57 @@
             if (isMobile) {
                 console.log('检测到移动设备，准备音频支持...');
 
-                // 在用户首次交互时激活音频
-                const activateAudioOnInteraction = () => {
+                // 强制初始化语音合成
+                try {
+                    if ('speechSynthesis' in window) {
+                        // 尝试获取语音列表来初始化语音合成
+                        const voices = speechSynthesis.getVoices();
+                        if (voices.length === 0) {
+                            // 如果没有语音，等待语音列表加载
+                            speechSynthesis.onvoiceschanged = () => {
+                                console.log('语音合成已初始化，语音数量:', speechSynthesis.getVoices().length);
+                            };
+                        } else {
+                            console.log('语音合成已初始化，语音数量:', voices.length);
+                        }
+                    }
+                } catch (error) {
+                    console.error('语音合成初始化失败:', error);
+                }
+
+                // 创建多个激活事件确保音频能够启动
+                const activateAudioOnInteraction = (event) => {
+                    console.log('用户交互检测到，激活音频...');
+
+                    // 激活音频上下文
                     initAudioContext();
+
+                    // 强制初始化语音合成
+                    if ('speechSynthesis' in window) {
+                        const testUtterance = new SpeechSynthesisUtterance('');
+                        testUtterance.volume = 0; // 静音测试
+                        speechSynthesis.speak(testUtterance);
+                        setTimeout(() => speechSynthesis.cancel(), 100);
+                    }
+
+                    // 移除事件监听器
                     document.removeEventListener('touchstart', activateAudioOnInteraction);
                     document.removeEventListener('click', activateAudioOnInteraction);
+                    document.removeEventListener('keydown', activateAudioOnInteraction);
+
                     console.log('移动端音频已激活');
+                    showFeedback('success', '🔊 音频功能已激活');
                 };
 
+                // 添加多种交互事件
                 document.addEventListener('touchstart', activateAudioOnInteraction, { once: true });
                 document.addEventListener('click', activateAudioOnInteraction, { once: true });
+                document.addEventListener('keydown', activateAudioOnInteraction, { once: true });
+
+                // 显示激活提示
+                setTimeout(() => {
+                    showFeedback('info', '📱 请点击屏幕任意位置激活音频功能');
+                }, 1000);
             }
         }
 
@@ -2084,26 +2267,54 @@
 
         // 播放发音
         function playNormalSpeed() {
+            console.log('点击了正常速度播放按钮');
             if (gameState.currentWord && settings.sound) {
-                const success = speakWord(gameState.currentWord.word, 1.0, true);
-                if (success) {
-                    // 添加按钮反馈效果
-                    const btn = event.target.closest('.audio-btn');
-                    btn.classList.add('playing');
-                    setTimeout(() => btn.classList.remove('playing'), 1000);
+                // 确保音频已激活
+                if (!audioInitialized) {
+                    initAudioContext();
+                    setupMobileAudioSupport();
                 }
+
+                // 移动端延迟执行
+                setTimeout(() => {
+                    const success = speakWord(gameState.currentWord.word, 1.0, true);
+                    if (success) {
+                        // 添加按钮反馈效果
+                        const btn = event.target.closest('.audio-btn');
+                        if (btn) {
+                            btn.classList.add('playing');
+                            setTimeout(() => btn.classList.remove('playing'), 1000);
+                        }
+                    }
+                }, 100);
+            } else {
+                console.log('游戏状态或设置不允许播放音频');
             }
         }
 
         function playSlowSpeed() {
+            console.log('点击了慢速播放按钮');
             if (gameState.currentWord && settings.sound) {
-                const success = speakWord(gameState.currentWord.word, 0.7, true);
-                if (success) {
-                    // 添加按钮反馈效果
-                    const btn = event.target.closest('.audio-btn');
-                    btn.classList.add('playing');
-                    setTimeout(() => btn.classList.remove('playing'), 1500);
+                // 确保音频已激活
+                if (!audioInitialized) {
+                    initAudioContext();
+                    setupMobileAudioSupport();
                 }
+
+                // 移动端延迟执行
+                setTimeout(() => {
+                    const success = speakWord(gameState.currentWord.word, 0.7, true);
+                    if (success) {
+                        // 添加按钮反馈效果
+                        const btn = event.target.closest('.audio-btn');
+                        if (btn) {
+                            btn.classList.add('playing');
+                            setTimeout(() => btn.classList.remove('playing'), 1500);
+                        }
+                    }
+                }, 100);
+            } else {
+                console.log('游戏状态或设置不允许播放音频');
             }
         }
 
