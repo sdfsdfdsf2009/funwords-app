@@ -1,0 +1,979 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+@layer base {
+  html {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply text-gray-900 antialiased;
+    /* 优化的品牌渐变背景 - 降低透明度提升性能 */
+    background: linear-gradient(135deg,
+      rgba(102, 126, 234, 0.05) 0%,
+      rgba(118, 75, 162, 0.05) 15%,
+      rgba(240, 147, 251, 0.05) 30%,
+      rgba(251, 194, 235, 0.05) 45%,
+      rgba(168, 237, 234, 0.05) 60%,
+      rgba(254, 214, 227, 0.05) 75%,
+      rgba(251, 194, 235, 0.05) 85%,
+      rgba(102, 126, 234, 0.05) 100%
+    );
+    background-size: 400% 400%;
+    animation: gradientShift 40s ease infinite;
+    /* 启用硬件加速 */
+    transform: translateZ(0);
+    will-change: background-position;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+    text-rendering: optimizeLegibility;
+    -webkit-text-size-adjust: 100%;
+    -moz-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  * {
+    @apply border-gray-200;
+    box-sizing: border-box;
+  }
+
+  /* Apple-style scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-gray-300 rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-gray-400;
+  }
+
+  /* Remove default margins */
+  h1, h2, h3, h4, h5, h6, p, figure, blockquote, dl, dd {
+    margin: 0;
+  }
+
+  /* Remove list styles on ul, ol elements with a list role applied */
+  ul[role='list'],
+  ol[role='list'] {
+    list-style: none;
+  }
+
+  /* Set core root defaults */
+  html:focus-within {
+    scroll-behavior: smooth;
+  }
+
+  /* Set core body defaults */
+  body {
+    min-height: 100vh;
+    text-rendering: optimizeSpeed;
+    line-height: 1.5;
+  }
+
+  /* A elements that don't have a class get default styles */
+  a:not([class]) {
+    text-decoration-skip-ink: auto;
+  }
+
+  /* Make images easier to work with */
+  img,
+  picture {
+    max-width: 100%;
+    display: block;
+  }
+
+  /* Inherit fonts for inputs and buttons */
+  input,
+  button,
+  textarea,
+  select {
+    font: inherit;
+  }
+
+  /* Remove all animations, transitions and smooth scroll for people that prefer not to see them */
+  @media (prefers-reduced-motion: reduce) {
+    html:focus-within {
+      scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer components {
+  /* Apple-style Button Styles */
+  .btn {
+    @apply inline-flex items-center justify-center px-6 py-3 text-sm font-sf-pro-text font-medium rounded-apple transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 select-none;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+  }
+
+  .btn:active {
+    transform: translateY(1px);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  }
+
+  .btn-primary {
+    @apply btn text-white;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3), 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+    position: relative;
+    overflow: hidden;
+    transform: translateZ(0); /* 启用硬件加速 */
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform, box-shadow;
+  }
+
+  .btn-primary::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+  }
+
+  .btn-primary:hover::before {
+    left: 100%;
+  }
+
+  .btn-primary:hover {
+    background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 50%, #e67de4 100%);
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4), 0 2px 8px rgba(0, 0, 0, 0.15);
+  }
+
+  .btn-primary:active {
+    transform: translateY(0) scale(0.98);
+    transition: transform 0.1s;
+  }
+
+  /* 触摸设备优化 */
+  @media (hover: none) and (pointer: coarse) {
+    .btn-primary:hover {
+      transform: none;
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3), 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+    }
+
+    .btn-primary:active {
+      transform: scale(0.95);
+      transition: transform 0.1s;
+    }
+  }
+
+  .btn-secondary {
+    @apply btn bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 hover:border-gray-400;
+  }
+
+  .btn-success {
+    @apply btn text-white;
+    background: linear-gradient(180deg, #34C759 0%, #2B9E4F 100%);
+  }
+
+  .btn-success:hover {
+    background: linear-gradient(180deg, #2B9E4F 0%, #237540 100%);
+  }
+
+  .btn-warning {
+    @apply btn text-white;
+    background: linear-gradient(180deg, #FF9500 0%, #E6850E 100%);
+  }
+
+  .btn-warning:hover {
+    background: linear-gradient(180deg, #E6850E 0%, #CC6D00 100%);
+  }
+
+  .btn-error {
+    @apply btn text-white;
+    background: linear-gradient(180deg, #FF3B30 0%, #E6352A 100%);
+  }
+
+  .btn-error:hover {
+    background: linear-gradient(180deg, #E6352A 0%, #CC2F25 100%);
+  }
+
+  .btn-ghost {
+    @apply btn bg-transparent text-gray-700 hover:bg-gray-100 rounded-apple-md;
+    box-shadow: none;
+  }
+
+  .btn-ghost:active {
+    background-color: rgba(0, 0, 0, 0.05);
+  }
+
+  /* Apple-style Input Styles */
+  .input {
+    @apply block w-full px-4 py-3 bg-white border border-gray-300 rounded-apple-md shadow-apple-sm placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 font-sf-pro-text;
+  }
+
+  .input:focus {
+    box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1), 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+  }
+
+  .input-error {
+    @apply border-red-300 focus:ring-red-500;
+  }
+
+  .input-success {
+    @apply border-green-300 focus:ring-green-500;
+  }
+
+  /* Apple-style Card Styles */
+  .card {
+    @apply bg-white border border-gray-200 rounded-apple-lg shadow-apple-card backdrop-blur-apple;
+    backdrop-filter: blur(20px);
+  }
+
+  .card-header {
+    @apply px-apple-xl py-apple-lg border-b border-gray-200 bg-gray-50 rounded-t-apple-lg;
+  }
+
+  .card-body {
+    @apply px-apple-xl py-apple-lg;
+  }
+
+  .card-footer {
+    @apply px-apple-xl py-apple-lg border-t border-gray-200 bg-gray-50 rounded-b-apple-lg;
+  }
+
+  /* Apple-style Glass Card */
+  .glass-card {
+    @apply bg-white/70 border border-white/20 rounded-apple-lg shadow-apple-lg backdrop-blur-apple;
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  /* 品牌渐变卡片 */
+  .brand-card {
+    @apply rounded-apple-lg shadow-apple-lg;
+    background: linear-gradient(135deg,
+      rgba(255, 255, 255, 0.9) 0%,
+      rgba(255, 255, 255, 0.8) 50%,
+      rgba(240, 147, 251, 0.1) 100%
+    );
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .brand-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #667eea, #764ba2, #f093fb);
+    animation: shimmer 3s ease-in-out infinite;
+  }
+
+  /* 品牌图标容器 */
+  .brand-icon {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+    box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .brand-icon::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
+    animation: iconGlow 4s ease-in-out infinite;
+  }
+
+  /* 品牌标题样式 */
+  .brand-title {
+    background: linear-gradient(135deg, #667eea, #764ba2, #f093fb);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: 0 2px 10px rgba(102, 126, 234, 0.2);
+  }
+
+  /* Apple-style Badge Styles */
+  .badge {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-sf-pro-text font-medium;
+  }
+
+  .badge-primary {
+    @apply badge bg-blue-100 text-blue-800;
+  }
+
+  .badge-success {
+    @apply badge bg-green-100 text-green-800;
+  }
+
+  .badge-warning {
+    @apply badge bg-orange-100 text-orange-800;
+  }
+
+  .badge-error {
+    @apply badge bg-red-100 text-red-800;
+  }
+
+  .badge-gray {
+    @apply badge bg-gray-100 text-gray-800;
+  }
+
+  /* Modal Styles */
+  .modal-overlay {
+    @apply fixed inset-0 bg-black bg-opacity-50 transition-opacity z-apple-modal-backdrop;
+  }
+
+  .modal-container {
+    @apply fixed inset-0 z-apple-modal overflow-y-auto;
+  }
+
+  .modal {
+    @apply relative bg-white rounded-apple-2xl shadow-apple-modal max-w-lg mx-auto mt-20 mb-20;
+  }
+
+  /* Dropdown Styles */
+  .dropdown {
+    @apply absolute right-0 z-50 mt-2 w-48 rounded-apple-lg shadow-apple-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none;
+  }
+
+  .dropdown-item {
+    @apply block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer transition-colors;
+  }
+
+  .dropdown-item-active {
+    @apply bg-gray-100 text-gray-900;
+  }
+
+  .dropdown-separator {
+    @apply border-t border-gray-100 my-1;
+  }
+
+  /* Loading Styles */
+  .loading-spinner {
+    @apply animate-spin rounded-full border-2 border-gray-300 border-t-blue-600;
+    will-change: transform;
+  }
+
+  .loading-dots::after {
+    content: '';
+    animation: loading-dots 1.5s infinite;
+  }
+
+  /* 改进的加载状态 */
+  .loading-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    transition: opacity 0.3s;
+  }
+
+  .loading-content {
+    background: white;
+    border-radius: 16px;
+    padding: 32px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    animation: fadeInUp 0.3s ease-out;
+  }
+
+  /* 骨架屏加载状态 */
+  .skeleton {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s infinite;
+    border-radius: 8px;
+  }
+
+  @keyframes skeleton-loading {
+    0% {
+      background-position: 200% 0;
+    }
+    100% {
+      background-position: -200% 0;
+    }
+  }
+
+  /* 平滑过渡 */
+  .smooth-transition {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* 优化的触摸反馈 */
+  .touch-feedback {
+    transition: transform 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    transform: translateZ(0);
+    will-change: transform;
+  }
+
+  .touch-feedback:active {
+    transform: scale(0.96) translateZ(0);
+  }
+
+  /* 增强的交互反馈 */
+  .interactive-element {
+    transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    transform: translateZ(0);
+    will-change: transform, box-shadow;
+  }
+
+  .interactive-element:hover {
+    transform: translateY(-1px) translateZ(0);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .interactive-element:active {
+    transform: translateY(0) scale(0.98) translateZ(0);
+    transition-duration: 0.1s;
+  }
+
+  /* 平滑的按钮交互 */
+  .btn-smooth {
+    transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    transform: translateZ(0);
+    will-change: transform, box-shadow, background-color;
+  }
+
+  .btn-smooth:hover {
+    transform: translateY(-1px) translateZ(0);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+  }
+
+  .btn-smooth:active {
+    transform: translateY(0) scale(0.97) translateZ(0);
+    transition-duration: 0.1s;
+  }
+
+  /* 焦点状态 */
+  .focus-visible:focus {
+    outline: 2px solid #667eea;
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* 减少动画偏好 */
+  @media (prefers-reduced-motion: reduce) {
+    .smooth-transition,
+    .touch-feedback,
+    .loading-overlay,
+    .loading-content {
+      transition: none !important;
+      animation: none !important;
+    }
+
+    .loading-spinner {
+      animation: none;
+    }
+
+    .skeleton {
+      animation: none;
+      background: #f0f0f0;
+    }
+  }
+
+  /* Scrollbar Styles */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(156 163 175) rgb(243 244 246);
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: rgb(243 244 246);
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: rgb(156 163 175);
+    border-radius: 3px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background-color: rgb(107 114 128);
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .text-pretty {
+    text-wrap: pretty;
+  }
+
+  .bg-gradient-radial {
+    background-image: radial-gradient(var(--tw-gradient-stops));
+  }
+
+  .bg-gradient-conic {
+    background-image: conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops));
+  }
+
+  /* 性能优化的动画类 */
+  .animate-fade-in {
+    animation: optimizedFadeIn 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    will-change: opacity, transform;
+  }
+
+  .animate-fade-in-up {
+    animation: optimizedSlideUp 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    will-change: opacity, transform;
+  }
+
+  .animate-fade-in-down {
+    animation: fadeInDown 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    will-change: opacity, transform;
+  }
+
+  .animate-slide-up {
+    animation: optimizedSlideUp 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    will-change: opacity, transform;
+  }
+
+  .animate-slide-down {
+    animation: slideDown 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    will-change: opacity, transform;
+  }
+
+  .animate-scale-in {
+    animation: optimizedScaleIn 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    will-change: opacity, transform;
+  }
+
+  .animate-bounce-in {
+    animation: bounceIn 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  }
+
+  .animate-pulse-soft {
+    animation: pulseSoft 2s ease-in-out infinite;
+  }
+
+  .animate-apple-bounce {
+    animation: appleBounce 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  }
+
+  .animate-apple-slide {
+    animation: appleSlide 0.4s cubic-bezier(0.4, 0.0, 0.2, 1);
+  }
+
+  .animate-apple-glow {
+    animation: appleGlow 2s ease-in-out infinite alternate;
+  }
+
+  .animate-apple-rotate {
+    animation: appleRotate 20s linear infinite;
+  }
+
+  /* Apple-style hover effects */
+  .apple-hover-lift {
+    transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+  }
+
+  .apple-hover-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.15);
+  }
+
+  .apple-hover-glow {
+    transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+  }
+
+  .apple-hover-glow:hover {
+    box-shadow: 0 0 20px rgba(0, 122, 255, 0.3);
+  }
+
+  /* Apple-style loading states */
+  .apple-shimmer {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+
+  .apple-pulse-ring {
+    position: relative;
+  }
+
+  .apple-pulse-ring::before {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border: 2px solid currentColor;
+    border-radius: 50%;
+    animation: pulseRing 1.5s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+  }
+
+  /* Focus styles */
+  .focus-ring {
+    @apply focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2;
+  }
+
+  /* Aspect ratio utilities */
+  .aspect-video {
+    aspect-ratio: 16 / 9;
+  }
+
+  .aspect-square {
+    aspect-ratio: 1 / 1;
+  }
+
+  .aspect-photo {
+    aspect-ratio: 4 / 3;
+  }
+
+  /* Truncate utilities */
+  .truncate-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .truncate-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}
+
+/* Keyframe animations */
+@keyframes loading-dots {
+  0%, 20% { content: '.'; }
+  40% { content: '..'; }
+  60%, 100% { content: '...'; }
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* 性能优化的动画关键帧 */
+@keyframes optimizedFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes optimizedSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px) translateZ(0);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) translateZ(0);
+  }
+}
+
+@keyframes optimizedScaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateZ(0);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateZ(0);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(10px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes slideDown {
+  from { transform: translateY(-10px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes bounceIn {
+  0% { transform: scale(0.9); opacity: 0; }
+  50% { transform: scale(1.03); }
+  70% { transform: scale(0.98); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes appleBounce {
+  0%, 20%, 53%, 80%, 100% { transform: translate3d(0,0,0); }
+  40%, 43% { transform: translate3d(0, -30px, 0); }
+  70% { transform: translate3d(0, -15px, 0); }
+  90% { transform: translate3d(0, -4px, 0); }
+}
+
+@keyframes appleSlide {
+  0% { transform: translateX(-100%); opacity: 0; }
+  50% { opacity: 1; }
+  100% { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes appleGlow {
+  0%, 100% { box-shadow: 0 0 5px rgba(0, 122, 255, 0.2); }
+  50% { box-shadow: 0 0 20px rgba(0, 122, 255, 0.6); }
+}
+
+@keyframes appleRotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes pulseRing {
+  0% {
+    transform: scale(0.8);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.4);
+    opacity: 0;
+  }
+}
+
+@keyframes pulseSoft {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+@keyframes brandFloat {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes brandPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
+}
+
+@keyframes iconGlow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Print styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  .print-break-before {
+    page-break-before: always;
+  }
+
+  .print-break-after {
+    page-break-after: always;
+  }
+
+  .print-break-inside-avoid {
+    page-break-inside: avoid;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .card {
+    @apply border-2 border-gray-900;
+  }
+
+  .btn {
+    @apply border-2 border-current;
+  }
+}
+
+/* Mobile-specific styles */
+@media (max-width: 768px) {
+  .mobile-padding {
+    @apply px-6;
+  }
+
+  .mobile-text-sm {
+    @apply text-sm;
+  }
+
+  .mobile-card {
+    @apply rounded-xl shadow-md;
+  }
+
+  .mobile-button {
+    @apply px-6 py-3 text-sm;
+  }
+
+  .mobile-stack {
+    @apply flex-col space-y-3;
+  }
+
+  .mobile-hidden {
+    @apply hidden;
+  }
+
+  .mobile-full-width {
+    @apply w-full;
+  }
+}
+
+@media (max-width: 480px) {
+  .small-padding {
+    @apply px-4;
+  }
+
+  .small-text {
+    @apply text-xs;
+  }
+
+  .small-card {
+    @apply rounded-lg shadow-sm;
+  }
+
+  .small-button {
+    @apply px-4 py-2 text-xs;
+  }
+
+  .small-stack {
+    @apply flex-col space-y-2;
+  }
+
+  .small-hidden {
+    @apply hidden;
+  }
+
+  .small-full-width {
+    @apply w-full;
+  }
+}
+
+/* Touch-friendly hover states for mobile */
+@media (hover: none) and (pointer: coarse) {
+  .btn:hover,
+  .apple-hover-lift:hover,
+  .apple-hover-glow:hover {
+    transform: none;
+    box-shadow: inherit;
+  }
+
+  .group:hover .group-hover\:scale-110 {
+    transform: none;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* High DPI displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .apple-border {
+    border-width: 0.5px;
+  }
+}
+
+/* Dark mode support for Apple */
+@media (prefers-color-scheme: dark) {
+  .dark-auto {
+    @apply bg-gray-900 text-gray-100;
+  }
+}
+
+/* Print styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  .print-break-before {
+    page-break-before: always;
+  }
+
+  .print-break-after {
+    page-break-after: always;
+  }
+
+  .print-break-inside-avoid {
+    page-break-inside: avoid;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .card {
+    @apply border-2 border-gray-900;
+  }
+
+  .btn {
+    @apply border-2 border-current;
+  }
+
+  .glass-card {
+    @apply border-2 border-gray-800;
+    background: rgba(255, 255, 255, 0.9);
+  }
+}

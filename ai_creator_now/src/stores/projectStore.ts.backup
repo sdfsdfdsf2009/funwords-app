@@ -1,0 +1,663 @@
+import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import {
+  Project,
+  Scene,
+  GeneratedImage,
+  GeneratedVideo,
+  AudioTrack,
+  Timeline,
+  ProjectSettings,
+  CSVSceneData
+} from '../types';
+
+interface ProjectStore {
+  // Current project state
+  currentProject: Project | null;
+  projects: Project[];
+
+  // UI state
+  isLoading: boolean;
+  error: string | null;
+
+  // Actions
+  createProject: (name: string, description?: string) => void;
+  updateProject: (updates: Partial<Project>) => void;
+  deleteProject: (projectId: string) => void;
+  setCurrentProject: (projectId: string) => void;
+
+  // Scene management
+  importScenesFromCSV: (scenes: CSVSceneData[]) => void;
+  addScene: (scene: Omit<Scene, 'id' | 'createdAt' | 'updatedAt'>) => void;
+  updateScene: (sceneId: string, updates: Partial<Scene>) => void;
+  deleteScene: (sceneId: string) => void;
+  reorderScenes: (fromIndex: number, toIndex: number) => void;
+
+  // Image management
+  addGeneratedImages: (sceneId: string, images: GeneratedImage[]) => void;
+  selectImage: (sceneId: string, imageId: string) => void;
+
+  // Enhanced image selection for scene-based workflow
+  selectedImagesPerScene: Record<string, string[]>; // sceneId -> imageIds
+  toggleImageSelection: (sceneId: string, imageId: string) => void;
+  selectMultipleImages: (sceneId: string, imageIds: string[]) => void;
+  clearSceneSelection: (sceneId: string) => void;
+  selectAllSceneImages: (sceneId: string) => void;
+  getSceneSelectedImages: (sceneId: string) => string[];
+  isImageSelected: (sceneId: string, imageId: string) => boolean;
+  clearAllImageSelections: () => void;
+
+  // Video management
+  addGeneratedVideo: (sceneId: string, video: GeneratedVideo) => void;
+  removeGeneratedVideo: (sceneId: string, videoId: string) => void;
+  clearSceneVideos: (sceneId: string) => void;
+
+  // Timeline management
+  timeline: Timeline | null;
+  updateTimeline: (updates: Partial<Timeline>) => void;
+  addAudioTrack: (audioTrack: AudioTrack) => void;
+  updateAudioTrack: (trackId: string, updates: Partial<AudioTrack>) => void;
+  removeAudioTrack: (trackId: string) => void;
+
+  // Utility
+  setLoading: (loading: boolean) => void;
+  setError: (error: string | null) => void;
+  clearError: () => void;
+}
+
+export const useProjectStore = create<ProjectStore>()(
+  persist(
+    (set, get) => ({
+      // Initial state
+      currentProject: null,
+      projects: [],
+      timeline: null,
+      isLoading: false,
+      error: null,
+      selectedImagesPerScene: {},
+
+      // Project actions
+      createProject: (name, description) => {
+        const newProject: Project = {
+          id: `project_${Date.now()}`,
+          name,
+          description,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          scenes: [],
+          settings: {
+            defaultImageSettings: {
+              width: 1024,
+              height: 1024,
+              quality: 'standard',
+              numberOfImages: 4
+            },
+            defaultVideoSettings: {
+              duration: 5,
+              fps: 30,
+              quality: 'standard',
+              motionIntensity: 'medium'
+            },
+            exportSettings: {
+              format: 'mp4',
+              resolution: { width: 1920, height: 1080 },
+              quality: 'high',
+              audioBitrate: 128,
+              videoBitrate: 5000
+            }
+          }
+        };
+
+        set(state => ({
+          projects: [...state.projects, newProject],
+          currentProject: newProject,
+          timeline: null
+        }));
+      },
+
+      updateProject: (updates) => {
+        set(state => {
+          if (!state.currentProject) return state;
+
+          const updatedProject = {
+            ...state.currentProject,
+            ...updates,
+            updatedAt: new Date()
+          };
+
+          const updatedProjects = state.projects.map(p =>
+            p.id === updatedProject.id ? updatedProject : p
+          );
+
+          return {
+            currentProject: updatedProject,
+            projects: updatedProjects
+          };
+        });
+      },
+
+      deleteProject: (projectId) => {
+        set(state => ({
+          projects: state.projects.filter(p => p.id !== projectId),
+          currentProject: state.currentProject?.id === projectId ? null : state.currentProject,
+          timeline: state.currentProject?.id === projectId ? null : state.timeline
+        }));
+      },
+
+      setCurrentProject: (projectId) => {
+        const project = get().projects.find(p => p.id === projectId);
+        set({
+          currentProject: project || null,
+          timeline: null
+        });
+      },
+
+      // Scene management
+      importScenesFromCSV: (scenes) => {
+        set(state => {
+          if (!state.currentProject) return state;
+
+          const newScenes: Scene[] = scenes.map(csvScene => ({
+            id: `scene_${Date.now()}_${csvScene.sceneNumber}`,
+            sceneNumber: csvScene.sceneNumber,
+            imagePrompt: csvScene.imagePrompt,
+            videoPrompt: csvScene.videoPrompt,
+            images: [],
+            createdAt: new Date(),
+            updatedAt: new Date()
+          }));
+
+          const updatedProject = {
+            ...state.currentProject,
+            scenes: newScenes,
+            updatedAt: new Date()
+          };
+
+          return {
+            currentProject: updatedProject,
+            projects: state.projects.map(p =>
+              p.id === updatedProject.id ? updatedProject : p
+            )
+          };
+        });
+      },
+
+      addScene: (sceneData) => {
+        set(state => {
+          if (!state.currentProject) return state;
+
+          const newScene: Scene = {
+            ...sceneData,
+            id: `scene_${Date.now()}`,
+            createdAt: new Date(),
+            updatedAt: new Date()
+          };
+
+          const updatedProject = {
+            ...state.currentProject,
+            scenes: [...state.currentProject.scenes, newScene],
+            updatedAt: new Date()
+          };
+
+          return {
+            currentProject: updatedProject,
+            projects: state.projects.map(p =>
+              p.id === updatedProject.id ? updatedProject : p
+            )
+          };
+        });
+      },
+
+      updateScene: (sceneId, updates) => {
+        set(state => {
+          if (!state.currentProject) return state;
+
+          const updatedScenes = state.currentProject.scenes.map(scene =>
+            scene.id === sceneId
+              ? { ...scene, ...updates, updatedAt: new Date() }
+              : scene
+          );
+
+          const updatedProject = {
+            ...state.currentProject,
+            scenes: updatedScenes,
+            updatedAt: new Date()
+          };
+
+          return {
+            currentProject: updatedProject,
+            projects: state.projects.map(p =>
+              p.id === updatedProject.id ? updatedProject : p
+            )
+          };
+        });
+      },
+
+      deleteScene: (sceneId) => {
+        set(state => {
+          if (!state.currentProject) return state;
+
+          const updatedScenes = state.currentProject.scenes.filter(scene => scene.id !== sceneId);
+
+          const updatedProject = {
+            ...state.currentProject,
+            scenes: updatedScenes,
+            updatedAt: new Date()
+          };
+
+          return {
+            currentProject: updatedProject,
+            projects: state.projects.map(p =>
+              p.id === updatedProject.id ? updatedProject : p
+            )
+          };
+        });
+      },
+
+      reorderScenes: (fromIndex, toIndex) => {
+        set(state => {
+          if (!state.currentProject) return state;
+
+          const scenes = [...state.currentProject.scenes];
+          const [movedScene] = scenes.splice(fromIndex, 1);
+          scenes.splice(toIndex, 0, movedScene);
+
+          // Renumber scenes
+          const renumberedScenes = scenes.map((scene, index) => ({
+            ...scene,
+            sceneNumber: index + 1,
+            updatedAt: new Date()
+          }));
+
+          const updatedProject = {
+            ...state.currentProject,
+            scenes: renumberedScenes,
+            updatedAt: new Date()
+          };
+
+          return {
+            currentProject: updatedProject,
+            projects: state.projects.map(p =>
+              p.id === updatedProject.id ? updatedProject : p
+            )
+          };
+        });
+      },
+
+      // Image management
+      addGeneratedImages: (sceneId, images) => {
+        set(state => {
+          if (!state.currentProject) return state;
+
+          const updatedScenes = state.currentProject.scenes.map(scene =>
+            scene.id === sceneId
+              ? { ...scene, images: [...scene.images, ...images], updatedAt: new Date() }
+              : scene
+          );
+
+          const updatedProject = {
+            ...state.currentProject,
+            scenes: updatedScenes,
+            updatedAt: new Date()
+          };
+
+          return {
+            currentProject: updatedProject,
+            projects: state.projects.map(p =>
+              p.id === updatedProject.id ? updatedProject : p
+            )
+          };
+        });
+      },
+
+      selectImage: (sceneId, imageId) => {
+        set(state => {
+          if (!state.currentProject) return state;
+
+          const updatedScenes = state.currentProject.scenes.map(scene =>
+            scene.id === sceneId
+              ? {
+                  ...scene,
+                  selectedImage: scene.images.find(img => img.id === imageId),
+                  updatedAt: new Date()
+                }
+              : scene
+          );
+
+          const updatedProject = {
+            ...state.currentProject,
+            scenes: updatedScenes,
+            updatedAt: new Date()
+          };
+
+          return {
+            currentProject: updatedProject,
+            projects: state.projects.map(p =>
+              p.id === updatedProject.id ? updatedProject : p
+            )
+          };
+        });
+      },
+
+      // Enhanced image selection for scene-based workflow
+      toggleImageSelection: (sceneId, imageId) => {
+        set(state => {
+          const currentSelection = state.selectedImagesPerScene[sceneId] || [];
+          const isSelected = currentSelection.includes(imageId);
+
+          const updatedSelection = isSelected
+            ? currentSelection.filter(id => id !== imageId)
+            : [...currentSelection, imageId];
+
+          return {
+            ...state,
+            selectedImagesPerScene: {
+              ...state.selectedImagesPerScene,
+              [sceneId]: updatedSelection
+            }
+          };
+        });
+      },
+
+      selectMultipleImages: (sceneId, imageIds) => {
+        set(state => ({
+          ...state,
+          selectedImagesPerScene: {
+            ...state.selectedImagesPerScene,
+            [sceneId]: imageIds
+          }
+        }));
+      },
+
+      clearSceneSelection: (sceneId) => {
+        set(state => ({
+          ...state,
+          selectedImagesPerScene: {
+            ...state.selectedImagesPerScene,
+            [sceneId]: []
+          }
+        }));
+      },
+
+      selectAllSceneImages: (sceneId) => {
+        set(state => {
+          if (!state.currentProject) return state;
+
+          const scene = state.currentProject.scenes.find(s => s.id === sceneId);
+          if (!scene) return state;
+
+          return {
+            ...state,
+            selectedImagesPerScene: {
+              ...state.selectedImagesPerScene,
+              [sceneId]: scene.images.map(img => img.id)
+            }
+          };
+        });
+      },
+
+      getSceneSelectedImages: (sceneId) => {
+        return get().selectedImagesPerScene[sceneId] || [];
+      },
+
+      isImageSelected: (sceneId, imageId) => {
+        const selection = get().selectedImagesPerScene[sceneId] || [];
+        return selection.includes(imageId);
+      },
+
+      clearAllImageSelections: () => {
+        set(state => ({
+          ...state,
+          selectedImagesPerScene: {}
+        }));
+      },
+
+      // Video management
+      addGeneratedVideo: (sceneId, video) => {
+        console.log(`🎬 [addGeneratedVideo] Adding video to scene:`, {
+          sceneId,
+          videoId: video.id,
+          sourceImageId: video.sourceImageId,
+          provider: video.provider
+        });
+
+        set(state => {
+          if (!state.currentProject) {
+            console.error(`❌ [addGeneratedVideo] No current project available`);
+            return state;
+          }
+
+          console.log(`📋 [addGeneratedVideo] Current project scenes:`,
+            state.currentProject.scenes.map(s => ({ id: s.id, sceneNumber: s.sceneNumber }))
+          );
+
+          const updatedScenes = state.currentProject.scenes.map(scene => {
+            if (scene.id === sceneId) {
+              console.log(`✅ [addGeneratedVideo] Found matching scene: ${scene.id} (${scene.sceneNumber})`);
+
+              // Get existing videos array or initialize empty array
+              let existingVideos = scene.generatedVideos || [];
+
+              // Handle backward compatibility - migrate single video to array
+              if (scene.generatedVideo && existingVideos.length === 0) {
+                console.log(`🔄 [addGeneratedVideo] Migrating legacy video to array for scene ${scene.id}`);
+                existingVideos = [scene.generatedVideo];
+              }
+
+              console.log(`📹 [addGeneratedVideo] Scene currently has ${existingVideos.length} videos`);
+
+              // Check if video already exists (by ID) to avoid duplicates
+              if (existingVideos.some(v => v.id === video.id)) {
+                console.log(`⚠️ [addGeneratedVideo] Video ${video.id} already exists in scene ${scene.id}`);
+                return scene; // No change needed
+              }
+
+              // Add new video to the array
+              const updatedVideos = [...existingVideos, video];
+              console.log(`➕ [addGeneratedVideo] Added new video to scene ${scene.id}, now has ${updatedVideos.length} videos`);
+
+              return {
+                ...scene,
+                generatedVideos: updatedVideos,
+                generatedVideo: video, // Keep for backward compatibility
+                updatedAt: new Date()
+              };
+            } else {
+              console.log(`⚠️ [addGeneratedVideo] Scene ${scene.id} does not match target sceneId: ${sceneId}`);
+            }
+            return scene;
+          });
+
+          const updatedProject = {
+            ...state.currentProject,
+            scenes: updatedScenes,
+            updatedAt: new Date()
+          };
+
+          console.log(`🏗️ [addGeneratedVideo] Updated project with ${updatedScenes.length} scenes`);
+
+          return {
+            currentProject: updatedProject,
+            projects: state.projects.map(p =>
+              p.id === updatedProject.id ? updatedProject : p
+            )
+          };
+        });
+      },
+
+      removeGeneratedVideo: (sceneId, videoId) => {
+        set(state => {
+          if (!state.currentProject) return state;
+
+          const updatedScenes = state.currentProject.scenes.map(scene => {
+            if (scene.id === sceneId) {
+              const updatedVideos = (scene.generatedVideos || []).filter(v => v.id !== videoId);
+
+              // Update generatedVideo for backward compatibility
+              const newGeneratedVideo = updatedVideos.length > 0 ? updatedVideos[updatedVideos.length - 1] : undefined;
+
+              return {
+                ...scene,
+                generatedVideos: updatedVideos,
+                generatedVideo: newGeneratedVideo,
+                updatedAt: new Date()
+              };
+            }
+            return scene;
+          });
+
+          const updatedProject = {
+            ...state.currentProject,
+            scenes: updatedScenes,
+            updatedAt: new Date()
+          };
+
+          return {
+            currentProject: updatedProject,
+            projects: state.projects.map(p =>
+              p.id === updatedProject.id ? updatedProject : p
+            )
+          };
+        });
+      },
+
+      clearSceneVideos: (sceneId) => {
+        set(state => {
+          if (!state.currentProject) return state;
+
+          const updatedScenes = state.currentProject.scenes.map(scene => {
+            if (scene.id === sceneId) {
+              return {
+                ...scene,
+                generatedVideos: [],
+                generatedVideo: undefined,
+                updatedAt: new Date()
+              };
+            }
+            return scene;
+          });
+
+          const updatedProject = {
+            ...state.currentProject,
+            scenes: updatedScenes,
+            updatedAt: new Date()
+          };
+
+          return {
+            currentProject: updatedProject,
+            projects: state.projects.map(p =>
+              p.id === updatedProject.id ? updatedProject : p
+            )
+          };
+        });
+      },
+
+      // Timeline management
+      updateTimeline: (updates) => {
+        set(state => {
+          const currentTimeline = state.timeline || {
+            id: `timeline_${Date.now()}`,
+            projectId: state.currentProject?.id || '',
+            videoSegments: [],
+            audioTracks: [],
+            transitions: [],
+            duration: 0
+          };
+
+          return {
+            timeline: { ...currentTimeline, ...updates }
+          };
+        });
+      },
+
+      addAudioTrack: (audioTrack) => {
+        set(state => {
+          if (!state.timeline) return state;
+
+          return {
+            timeline: {
+              ...state.timeline,
+              audioTracks: [...state.timeline.audioTracks, audioTrack]
+            }
+          };
+        });
+      },
+
+      updateAudioTrack: (trackId, updates) => {
+        set(state => {
+          if (!state.timeline) return state;
+
+          const updatedTracks = state.timeline.audioTracks.map(track =>
+            track.id === trackId ? { ...track, ...updates } : track
+          );
+
+          return {
+            timeline: {
+              ...state.timeline,
+              audioTracks: updatedTracks
+            }
+          };
+        });
+      },
+
+      removeAudioTrack: (trackId) => {
+        set(state => {
+          if (!state.timeline) return state;
+
+          return {
+            timeline: {
+              ...state.timeline,
+              audioTracks: state.timeline.audioTracks.filter(track => track.id !== trackId)
+            }
+          };
+        });
+      },
+
+      // Utility
+      setLoading: (loading) => set({ isLoading: loading }),
+      setError: (error) => set({ error }),
+      clearError: () => set({ error: null })
+    }),
+    {
+      name: 'video-workstation-storage',
+      storage: createJSONStorage(() => {
+        // 自定义storage处理Date对象
+        const storage = localStorage;
+        return {
+          getItem: (name) => {
+            const str = storage.getItem(name);
+            if (!str) return null;
+            try {
+              return JSON.parse(str, (key, value) => {
+                // 处理Date对象反序列化
+                if (value && typeof value === 'object' && value.__type === 'Date') {
+                  return new Date(value.value);
+                }
+                return value;
+              });
+            } catch {
+              return null;
+            }
+          },
+          setItem: (name, value) => {
+            const str = JSON.stringify(value, (key, value) => {
+              // 处理Date对象序列化
+              if (value instanceof Date) {
+                return { __type: 'Date', value: value.toISOString() };
+              }
+              return value;
+            });
+            storage.setItem(name, str);
+          },
+          removeItem: (name) => storage.removeItem(name),
+        };
+      }),
+      partialize: (state) => ({
+        projects: state.projects,
+        currentProject: state.currentProject,
+        selectedImagesPerScene: state.selectedImagesPerScene
+      }),
+      skipHydration: true // 跳过hydration以避免SSR不匹配
+    }
+  )
+);

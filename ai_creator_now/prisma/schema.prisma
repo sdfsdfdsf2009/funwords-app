@@ -1,0 +1,238 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String?
+  avatarUrl    String?  @map("avatar_url")
+  emailVerified Boolean  @default(false) @map("email_verified")
+  projects     Project[]
+  videoPresets VideoPreset[]
+  systemLogs   SystemLog[]
+  videoCaches  VideoCache[]
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+model Project {
+  id                String            @id @default(cuid())
+  name              String
+  description       String?
+  status            String            @default("draft")
+  settings          Json              @default("{}")
+  metadata          Json              @default("{}")
+  userId            String            @map("user_id")
+  user              User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  scenes            Scene[]
+  versions          ProjectVersion[]
+  remotionEditorData RemotionEditorData?
+  createdAt         DateTime          @default(now()) @map("created_at")
+  updatedAt         DateTime          @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("projects")
+}
+
+enum SceneStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  ERROR
+}
+
+model Scene {
+  id                String   @id @default(cuid())
+  sceneNumber       Int      @map("scene_number")
+  title             String
+  description       String?
+  videoPrompt       String?  @map("video_prompt")
+  model             String?
+  status            SceneStatus @default(PENDING)
+  transition        Json?
+  focusPeriods      Json?    @map("focus_periods")
+  images            Json     @default("[]")
+  videos            Json     @default("[]")
+  generatedVideos   Json     @default("[]") @map("generated_videos")
+  generatedVideo    Json?    @map("generated_video")
+  selectedImageId   String?  @map("selected_image_id")
+  selectedVideoId   String?  @map("selected_video_id")
+  selectedImageIds  Json     @default("[]") @map("selected_image_ids")
+  imageSelectionState Json? @map("image_selection_state")
+  duration          Int      @default(8)
+  projectId         String   @map("project_id")
+  project           Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  mediaAssets       MediaAsset[]
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  @@unique([projectId, sceneNumber])
+  @@index([projectId])
+  @@index([status])
+  @@index([sceneNumber])
+  @@map("scenes")
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+  AUDIO
+}
+
+enum MediaSource {
+  AI_GENERATED
+  USER_UPLOADED
+  SYSTEM
+}
+
+model MediaAsset {
+  id          String   @id @default(cuid())
+  type        MediaType
+  source      MediaSource
+  url         String
+  fileName    String?  @map("file_name")
+  fileSize    BigInt?  @map("file_size")
+  mimeType    String?  @map("mime_type")
+  metadata    Json     @default("{}")
+  prompt      String?
+  model       String?
+  isSelected  Boolean  @default(false) @map("is_selected")
+  sortOrder   Int      @default(0) @map("sort_order")
+  sceneId     String?  @map("scene_id")
+  scene       Scene?   @relation(fields: [sceneId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([sceneId])
+  @@index([type])
+  @@index([source])
+  @@index([isSelected])
+  @@map("media_assets")
+}
+
+model ProjectVersion {
+  id             String   @id @default(cuid())
+  versionNumber  Int      @map("version_number")
+  name           String?
+  description    String?
+  dataSnapshot   Json     @map("data_snapshot")
+  projectId      String   @map("project_id")
+  project        Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  @@unique([projectId, versionNumber])
+  @@index([projectId])
+  @@index([createdAt])
+  @@map("project_versions")
+}
+
+model RemotionEditorData {
+  id        String   @id @default(cuid())
+  projectId String   @unique @map("project_id")
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  timeline  Json     @default("{}")
+  settings  Json     @default("{}")
+  history   Json     @default("[]")
+  metadata  Json     @default("{}")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([projectId])
+  @@map("remotion_editor_data")
+}
+
+model VideoPreset {
+  id          String   @id @default(cuid())
+  userId      String   @map("user_id")
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String
+  description String?
+  settings    Json     @default("{}")
+  isDefault   Boolean  @default(false) @map("is_default")
+  isBuiltIn   Boolean  @default(false) @map("is_built_in")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@index([isDefault])
+  @@index([isBuiltIn])
+  @@map("video_presets")
+}
+
+enum LogLevel {
+  DEBUG
+  INFO
+  WARN
+  ERROR
+}
+
+model SystemLog {
+  id        String   @id @default(cuid())
+  userId    String?  @map("user_id")
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  level     LogLevel
+  message   String
+  category  String?  @default("system")
+  metadata  Json?    @default("{}")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@index([level])
+  @@index([category])
+  @@index([createdAt])
+  @@map("system_logs")
+}
+
+model VideoCache {
+  id            String   @id @default(cuid())
+  userId        String?  @map("user_id")
+  user          User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  videoId       String   @map("video_id")
+  localPath     String   @map("local_path")
+  originalUrl   String   @map("original_url")
+  downloadDate  BigInt   @map("download_date")
+  fileSize      BigInt?  @map("file_size")
+  metadata      Json?    @default("{}")
+  isActive      Boolean  @default(true) @map("is_active")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@unique([userId, videoId])
+  @@index([userId])
+  @@index([videoId])
+  @@index([downloadDate])
+  @@index([isActive])
+  @@map("video_caches")
+}
+
+model ApiConfig {
+  id        String   @id @default(cuid())
+  userId    String   @default("default-user") @map("user_id")
+  provider  String   // evolink, openai, etc.
+  apiKey    String   @map("api_key")
+  baseUrl  String?  @map("base_url")
+  model     String?
+  settings  Json?    @default("{}")
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([userId, provider])
+  @@index([userId])
+  @@index([provider])
+  @@index([isActive])
+  @@map("api_configs")
+}

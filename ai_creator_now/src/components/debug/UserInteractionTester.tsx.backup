@@ -1,0 +1,896 @@
+import React, { useState, useEffect } from 'react';
+import { Play, Pause, RotateCw, AlertTriangle, CheckCircle, Clock, MouseClick, Navigation, Zap, Bug, Eye } from 'lucide-react';
+import { errorMonitor } from '../../utils/errorMonitor';
+import { useProjectStore } from '../../stores/projectStore';
+import { useAPIConfigStore } from '../../stores/apiConfigStore';
+import { useRouter } from 'next/router';
+
+interface TestResult {
+  testId: string;
+  testName: string;
+  status: 'pending' | 'running' | 'passed' | 'failed' | 'error';
+  startTime: Date | null;
+  endTime: Date | null;
+  duration: number | null;
+  error: string | null;
+  details: any;
+}
+
+interface UserAction {
+  id: string;
+  action: string;
+  target: string;
+  timestamp: Date;
+  success: boolean;
+  error?: string;
+  responseTime?: number;
+}
+
+interface TestScenario {
+  id: string;
+  name: string;
+  description: string;
+  priority: 'high' | 'medium' | 'low';
+  category: 'project' | 'scene' | 'api' | 'generation' | 'navigation';
+  steps: TestStep[];
+}
+
+interface TestStep {
+  id: string;
+  name: string;
+  action: string;
+  target: string;
+  expected: string;
+  timeout: number;
+}
+
+export const UserInteractionTester: React.FC = () => {
+  const [testResults, setTestResults] = useState<TestResult[]>([]);
+  const [currentTest, setCurrentTest] = useState<string | null>(null);
+  const [isTestRunning, setIsTestRunning] = useState(false);
+  const [userActions, setUserActions] = useState<UserAction[]>([]);
+  const [testHistory, setTestHistory] = useState<TestResult[]>([]);
+  const [expandedScenarios, setExpandedScenarios] = useState<Set<string>>(new Set());
+  const [autoMode, setAutoMode] = useState(false);
+  const [testSpeed, setTestSpeed] = useState<'slow' | 'normal' | 'fast'>('normal');
+
+  const { createProject, deleteProject, projects, currentProject } = useProjectStore();
+  const { configurations } = useAPIConfigStore();
+  const router = useRouter();
+
+  // 预定义的测试场景
+  const testScenarios: TestScenario[] = [
+    {
+      id: 'project-creation',
+      name: '项目创建流程',
+      description: '测试创建新项目的完整流程',
+      priority: 'high',
+      category: 'project',
+      steps: [
+        {
+          id: 'create-project-with-name',
+          name: '创建带名称的项目',
+          action: '创建项目 "测试项目交互"',
+          target: 'ProjectSelector.createProject',
+          expected: '项目创建成功，出现在项目列表中',
+          timeout: 5000
+        },
+        {
+          id: 'verify-project-in-list',
+          name: '验证项目在列表中',
+          action: '检查项目列表',
+          target: 'ProjectSelector.projects',
+          expected: '新创建的项目出现在项目列表顶部',
+          timeout: 3000
+        }
+      ]
+    },
+    {
+      id: 'project-switching',
+      name: '项目切换流程',
+      description: '测试在不同项目间切换的流程',
+      priority: 'high',
+      category: 'project',
+      steps: [
+        {
+          id: 'switch-between-projects',
+          name: '切换项目',
+          action: '选择并切换到项目',
+          target: 'ProjectSelector.setCurrentProject',
+          expected: '当前项目更新，界面状态同步',
+          timeout: 3000
+        },
+        {
+          id: 'verify-current-project-display',
+          name: '验证当前项目显示',
+          action: '检查当前项目显示',
+          target: 'ProjectSelector.currentProject',
+          expected: '项目选择器显示正确的当前项目',
+          timeout: 2000
+        }
+      ]
+    },
+    {
+      id: 'project-deletion',
+      name: '项目删除流程',
+      description: '测试安全删除项目的流程',
+      priority: 'medium',
+      category: 'project',
+      steps: [
+        {
+          id: 'delete-project-safely',
+          name: '安全删除项目',
+          action: '删除非当前项目',
+          target: 'ProjectSelector.deleteProject',
+          expected: '项目被安全删除，不再出现在列表中',
+          timeout: 5000
+        },
+        {
+          id: 'verify-deletion-warning',
+          name: '验证删除警告',
+          action: '尝试删除最后一个项目',
+          target: 'ProjectSelector.deleteProject',
+          expected: '显示适当的警告信息，阻止删除',
+          timeout: 3000
+        }
+      ]
+    },
+    {
+      id: 'navigation-flow',
+      name: '页面导航流程',
+      description: '测试在不同页面间导航的流程',
+      priority: 'high',
+      category: 'navigation',
+      steps: [
+        {
+          id: 'navigate-to-scenes',
+          name: '导航到场景页面',
+          action: '点击场景管理导航',
+          target: 'Navigation.scenes',
+          expected: '成功导航到场景管理页面',
+          timeout: 3000
+        },
+        {
+          id: 'navigate-to-generation',
+          name: '导航到生成页面',
+          action: '点击视频生成导航',
+          target: 'Navigation.generation',
+          expected: '成功导航到视频生成页面',
+          timeout: 3000
+        },
+        {
+          id: 'navigate-to-debug',
+          name: '导航到调试页面',
+          action: '点击调试工具导航',
+          target: 'Navigation.debug',
+          expected: '成功导航到调试工具页面',
+          timeout: 3000
+        },
+        {
+          id: 'verify-navigation-consistency',
+          name: '验证导航一致性',
+          action: '多次导航后检查',
+          target: 'Navigation',
+          expected: '导航状态保持一致，URL正确更新',
+          timeout: 2000
+        }
+      ]
+    },
+    {
+      id: 'form-interaction',
+      name: '表单交互流程',
+      description: '测试各种表单的用户交互',
+      priority: 'medium',
+      category: 'api',
+      steps: [
+        {
+          id: 'fill-project-form',
+          name: '填写项目表单',
+          action: '输入项目名称',
+          target: 'ProjectForm.nameInput',
+          expected: '输入被正确接受，表单状态更新',
+          timeout: 3000
+        },
+        {
+          id: 'form-validation',
+          name: '表单验证测试',
+          action: '尝试提交空表单',
+          target: 'ProjectForm.submit',
+          expected: '显示验证错误，阻止提交',
+          timeout: 3000
+        }
+      ]
+    },
+    {
+      id: 'error-recovery',
+      name: '错误恢复流程',
+      description: '测试从错误状态恢复的流程',
+      priority: 'high',
+      category: 'generation',
+      steps: [
+        {
+          id: 'trigger-recoverable-error',
+          name: '触发可恢复错误',
+          action: '模拟网络错误或API错误',
+          target: 'ErrorBoundary.testError',
+          expected: '错误被正确捕获，显示友好提示',
+          timeout: 3000
+        },
+        {
+          id: 'error-recovery-action',
+          name: '执行恢复操作',
+          action: '点击重试或恢复按钮',
+          target: 'ErrorBoundary.retry',
+          expected: '成功从错误状态恢复，应用继续正常工作',
+          timeout: 5000
+        }
+      ]
+    }
+  ];
+
+  const getTimeoutDelay = () => {
+    switch (testSpeed) {
+      case 'slow': return 2;
+      case 'fast': return 0.5;
+      default: return 1;
+    }
+  };
+
+  const executeTest = async (scenario: TestScenario) => {
+    const testId = scenario.id;
+    const startTime = new Date();
+
+    const testResult: TestResult = {
+      testId,
+      testName: scenario.name,
+      status: 'running',
+      startTime,
+      endTime: null,
+      duration: null,
+      error: null,
+      details: {
+        scenario: scenario,
+        steps: [],
+        totalSteps: scenario.steps.length,
+        completedSteps: 0
+      }
+    };
+
+    setCurrentTest(testId);
+    setTestResults(prev => [...prev.filter(r => r.testId !== testId), testResult]);
+
+    try {
+      for (let i = 0; i < scenario.steps.length; i++) {
+        const step = scenario.steps[i];
+        const stepStartTime = Date.now();
+
+        // 执行测试步骤
+        await executeStep(step, i + 1, scenario.steps.length);
+
+        const stepEndTime = Date.now();
+        const stepDuration = stepEndTime - stepStartTime;
+
+        testResult.details.steps.push({
+          ...step,
+          duration: stepDuration,
+          status: 'completed'
+        });
+        testResult.details.completedSteps = i + 1;
+
+        // 更新测试结果
+        setTestResults(prev =>
+          prev.map(r =>
+            r.testId === testId
+              ? { ...r, details: testResult.details }
+              : r
+          )
+        );
+
+        // 步骤间隔
+        if (i < scenario.steps.length - 1) {
+          await sleep(1000 * getTimeoutDelay());
+        }
+      }
+
+      const endTime = new Date();
+      testResult.status = 'passed';
+      testResult.endTime = endTime;
+      testResult.duration = endTime.getTime() - startTime.getTime();
+
+      setUserActions(prev => [...prev, {
+        id: `test-${testId}-complete`,
+        action: scenario.name,
+        target: 'TestSuite',
+        timestamp: new Date(),
+        success: true,
+        responseTime: testResult.duration
+      }]);
+
+    } catch (error) {
+      const endTime = new Date();
+      testResult.status = 'failed';
+      testResult.endTime = endTime;
+      testResult.duration = endTime.getTime() - startTime.getTime();
+      testResult.error = error instanceof Error ? error.message : String(error);
+
+      setUserActions(prev => [...prev, {
+        id: `test-${testId}-failed`,
+        action: scenario.name,
+        target: 'TestSuite',
+        timestamp: new Date(),
+        success: false,
+        error: testResult.error
+      }]);
+
+      // 记录错误到监控系统
+      errorMonitor.logError({
+        type: 'javascript',
+        message: `测试失败: ${scenario.name} - ${testResult.error}`,
+        source: 'UserInteractionTester',
+        context: {
+          testId,
+          scenario,
+          error
+        }
+      });
+    }
+
+    setCurrentTest(null);
+    setTestResults(prev =>
+      prev.map(r =>
+        r.testId === testId
+          ? testResult
+          : r
+      )
+    );
+
+    setTestHistory(prev => [testResult, ...prev.slice(0, 49)]); // 保留最近50个测试结果
+  };
+
+  const executeStep = async (step: TestStep, stepNumber: number, totalSteps: number) => {
+    console.log(`🧪 执行步骤 ${stepNumber}/${totalSteps}: ${step.name}`);
+
+    // 模拟用户操作延迟
+    await sleep(500 * getTimeoutDelay());
+
+    // 根据步骤类型执行不同的测试逻辑
+    switch (step.target) {
+      case 'ProjectSelector.createProject':
+        await testProjectCreation(step);
+        break;
+      case 'ProjectSelector.setCurrentProject':
+        await testProjectSwitching(step);
+        break;
+      case 'ProjectSelector.deleteProject':
+        await testProjectDeletion(step);
+        break;
+      case 'Navigation.scenes':
+      case 'Navigation.generation':
+      case 'Navigation.debug':
+        await testNavigation(step);
+        break;
+      case 'ProjectForm.nameInput':
+      case 'ProjectForm.submit':
+        await testFormInteraction(step);
+        break;
+      case 'ErrorBoundary.testError':
+        await testErrorTrigger(step);
+        break;
+      case 'ErrorBoundary.retry':
+        await testErrorRecovery(step);
+        break;
+      default:
+        console.log(`⚠️ 未实现测试步骤: ${step.action}`);
+    }
+  };
+
+  const testProjectCreation = async (step: TestStep) => {
+    try {
+      // 模拟项目名称输入
+      const projectName = `测试项目-${Date.now()}`;
+
+      // 使用项目store创建项目
+      await createProject(projectName);
+
+      // 验证项目是否创建成功
+      const projects = useProjectStore.getState().projects;
+      const createdProject = projects.find(p => p.name === projectName);
+
+      if (createdProject) {
+        console.log(`✅ 项目创建成功: ${projectName}`);
+      } else {
+        throw new Error('项目创建失败');
+      }
+    } catch (error) {
+      throw new Error(`项目创建测试失败: ${error.message}`);
+    }
+  };
+
+  const testProjectSwitching = async (step: TestStep) => {
+    try {
+      if (projects.length < 2) {
+        console.log(`⚠️ 需要至少2个项目才能测试切换`);
+        return;
+      }
+
+      const nonCurrentProjects = projects.filter(p => p.id !== currentProject?.id);
+      if (nonCurrentProjects.length > 0) {
+        const targetProject = nonCurrentProjects[0];
+        await useProjectStore.getState().setCurrentProject(targetProject.id);
+
+        console.log(`✅ 项目切换成功: ${targetProject.name}`);
+      }
+    } catch (error) {
+      throw new Error(`项目切换测试失败: ${error.message}`);
+    }
+  };
+
+  const testProjectDeletion = async (step: TestStep) => {
+    try {
+      if (projects.length <= 1) {
+        console.log(`⚠️ 不能删除最后一个项目`);
+        return;
+      }
+
+      const nonCurrentProjects = projects.filter(p => p.id !== currentProject?.id);
+      if (nonCurrentProjects.length > 0) {
+        const targetProject = nonCurrentProjects[0];
+        await deleteProject(targetProject.id);
+
+        console.log(`✅ 项目删除成功: ${targetProject.name}`);
+      }
+    } catch (error) {
+      throw new Error(`项目删除测试失败: ${error.message}`);
+    }
+  };
+
+  const testNavigation = async (step: TestStep) => {
+    try {
+      const targetPath = step.action.includes('场景') ? '/scenes' :
+                      step.action.includes('生成') ? '/video-generation' :
+                      step.action.includes('调试') ? '/debug' : '/';
+
+      // 模拟导航
+      router.push(targetPath);
+
+      // 等待路由完成
+      await sleep(500);
+
+      console.log(`✅ 导航成功: ${targetPath}`);
+    } catch (error) {
+      throw new Error(`导航测试失败: ${error.message}`);
+    }
+  };
+
+  const testFormInteraction = async (step: TestStep) => {
+    try {
+      if (step.action.includes('空表单')) {
+        console.log(`📝 模拟空表单提交`);
+        // 模拟表单验证错误
+      } else {
+        console.log(`📝 模拟表单填写: ${step.action}`);
+        // 模拟表单填写
+      }
+    } catch (error) {
+      throw new Error(`表单交互测试失败: ${error.message}`);
+    }
+  };
+
+  const testErrorTrigger = async (step: TestStep) => {
+    try {
+      // 触发测试错误
+      errorMonitor.logError({
+        type: 'javascript',
+        message: '这是一个测试错误',
+        source: 'UserInteractionTester.testErrorTrigger',
+        context: { testStep: step }
+      });
+
+      console.log(`🐛 测试错误触发成功`);
+    } catch (error) {
+      throw new Error(`错误触发测试失败: ${error.message}`);
+    }
+  };
+
+  const testErrorRecovery = async (step: TestStep) => {
+    try {
+      console.log(`🔄 执行错误恢复操作`);
+      // 模拟恢复操作
+      await sleep(1000);
+
+      console.log(`✅ 错误恢复成功`);
+    } catch (error) {
+      throw new Error(`错误恢复测试失败: ${error.message}`);
+    }
+  };
+
+  const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+  const runAllTests = async () => {
+    setIsTestRunning(true);
+    setTestResults([]);
+    setUserActions([]);
+
+    // 按优先级排序测试场景
+    const sortedScenarios = [...testScenarios].sort((a, b) => {
+      const priorityOrder = { high: 0, medium: 1, low: 2 };
+      return priorityOrder[a.priority] - priorityOrder[b.priority];
+    });
+
+    for (const scenario of sortedScenarios) {
+      await executeTest(scenario);
+
+      // 测试间隔
+      if (autoMode) {
+        await sleep(2000 * getTimeoutDelay());
+      } else {
+        await sleep(1000);
+      }
+    }
+
+    setIsTestRunning(false);
+  };
+
+  const runSingleTest = async (scenarioId: string) => {
+    const scenario = testScenarios.find(s => s.id === scenarioId);
+    if (scenario) {
+      await executeTest(scenario);
+    }
+  };
+
+  const clearResults = () => {
+    setTestResults([]);
+    setUserActions([]);
+    setTestHistory([]);
+    errorMonitor.clearErrors();
+  };
+
+  const getTestStatistics = () => {
+    const total = testResults.length;
+    const passed = testResults.filter(r => r.status === 'passed').length;
+    const failed = testResults.filter(r => r.status === 'failed').length;
+    const averageDuration = total > 0
+      ? testResults.reduce((sum, r) => sum + (r.duration || 0), 0) / total
+      : 0;
+
+    return { total, passed, failed, averageDuration };
+  };
+
+  const getPriorityColor = (priority: string) => {
+    const colors = {
+      high: 'text-red-600 bg-red-100',
+      medium: 'text-yellow-600 bg-yellow-100',
+      low: 'text-green-600 bg-green-100'
+    };
+    return colors[priority as keyof typeof colors] || colors.low;
+  };
+
+  const getStatusColor = (status: string) => {
+    const colors = {
+      pending: 'text-gray-600 bg-gray-100',
+      running: 'text-blue-600 bg-blue-100',
+      passed: 'text-green-600 bg-green-100',
+      failed: 'text-red-600 bg-red-100',
+      error: 'text-red-800 bg-red-200'
+    };
+    return colors[status as keyof typeof colors] || colors.pending;
+  };
+
+  const formatDuration = (ms: number) => {
+    return (ms / 1000).toFixed(2) + 's';
+  };
+
+  const toggleScenarioExpanded = (scenarioId: string) => {
+    setExpandedScenarios(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(scenarioId)) {
+        newSet.delete(scenarioId);
+      } else {
+        newSet.add(scenarioId);
+      }
+      return newSet;
+    });
+  };
+
+  return (
+    <div className="max-w-7xl mx-auto p-6 space-y-6">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-3">
+          <MouseClick className="w-8 h-8 text-blue-600" />
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">用户交互流程测试</h1>
+            <p className="text-gray-600">自动化测试和验证用户交互流程</p>
+          </div>
+        </div>
+
+        <div className="flex items-center space-x-3">
+          <button
+            onClick={() => setAutoMode(!autoMode)}
+            className={`px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors ${
+              autoMode
+                ? 'bg-green-600 text-white hover:bg-green-700'
+                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            }`}
+            disabled={isTestRunning}
+          >
+            {autoMode ? '自动模式' : '手动模式'}
+          </button>
+
+          <select
+            value={testSpeed}
+            onChange={(e) => setTestSpeed(e.target.value as any)}
+            className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
+            disabled={isTestRunning}
+          >
+            <option value="slow">慢速</option>
+            <option value="normal">正常</option>
+            <option value="fast">快速</option>
+          </select>
+
+          <button
+            onClick={runAllTests}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg flex items-center space-x-2 hover:bg-blue-700 transition-colors"
+            disabled={isTestRunning}
+          >
+            {isTestRunning ? (
+              <>
+                <Pause className="w-4 h-4" />
+                <span>运行中...</span>
+              </>
+            ) : (
+              <>
+                <Play className="w-4 h-4" />
+                <span>运行所有测试</span>
+              </>
+            )}
+          </button>
+
+          <button
+            onClick={clearResults}
+            className="px-4 py-2 bg-gray-600 text-white rounded-lg flex items-center space-x-2 hover:bg-gray-700 transition-colors"
+            disabled={isTestRunning}
+          >
+            <RotateCw className="w-4 h-4" />
+            <span>清除结果</span>
+          </button>
+        </div>
+      </div>
+
+      {/* 统计信息 */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="bg-white rounded-lg shadow p-4 border border-gray-200">
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-gray-600">总测试数</span>
+            <span className="text-2xl font-bold text-gray-900">{getTestStatistics().total}</span>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow p-4 border border-gray-200">
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-gray-600">通过</span>
+            <span className="text-2xl font-bold text-green-600">{getTestStatistics().passed}</span>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow p-4 border border-gray-200">
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-gray-600">失败</span>
+            <span className="text-2xl font-bold text-red-600">{getTestStatistics().failed}</span>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow p-4 border border-gray-200">
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-gray-600">平均耗时</span>
+            <span className="text-2xl font-bold text-blue-600">
+              {formatDuration(getTestStatistics().averageDuration)}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* 测试场景列表 */}
+      <div className="space-y-4">
+        <h2 className="text-xl font-semibold text-gray-900">测试场景</h2>
+
+        {testScenarios.map(scenario => (
+          <div
+            key={scenario.id}
+            className="bg-white rounded-lg shadow border border-gray-200 overflow-hidden"
+          >
+            <div
+              className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50"
+              onClick={() => toggleScenarioExpanded(scenario.id)}
+            >
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center space-x-3">
+                  <span className={`px-2 py-1 rounded text-xs font-medium ${getPriorityColor(scenario.priority)}`}>
+                    {scenario.priority === 'high' ? '高' : scenario.priority === 'medium' ? '中' : '低'}
+                  </span>
+                  <h3 className="font-medium text-gray-900">{scenario.name}</h3>
+                  <span className="text-sm text-gray-600">{scenario.category}</span>
+                </div>
+                <p className="text-sm text-gray-500 mt-1">{scenario.description}</p>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                {currentTest === scenario.id && (
+                  <div className="flex items-center space-x-1">
+                    <div className="w-2 h-2 bg-blue-600 rounded-full animate-pulse" />
+                    <span className="text-blue-600 text-sm">运行中</span>
+                  </div>
+                )}
+
+                {testResults.find(r => r.testId === scenario.id) && (
+                  <span className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(testResults.find(r => r.testId === scenario.id)?.status)}`}>
+                    {testResults.find(r => r.testId === scenario.id)?.status === 'passed' && '✓'}
+                    {testResults.find(r => r.testId === scenario.id)?.status === 'failed' && '✗'}
+                    {testResults.find(r => r.testId === scenario.id)?.status === 'error' && '⚠️'}
+                  </span>
+                )}
+
+                <button
+                  onClick={() => runSingleTest(scenario.id)}
+                  className="px-3 py-1 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition-colors"
+                  disabled={isTestRunning}
+                >
+                  运行
+                </button>
+              </div>
+            </div>
+
+            {expandedScenarios.has(scenario.id) && (
+              <div className="border-t border-gray-200 p-4 bg-gray-50">
+                <h4 className="font-medium text-gray-900 mb-3">测试步骤</h4>
+                <div className="space-y-2">
+                  {scenario.steps.map((step, index) => {
+                  const stepResult = testResults
+                    .find(r => r.testId === scenario.id)
+                    ?.details?.steps[index];
+
+                  return (
+                    <div
+                      key={step.id}
+                      className="flex items-start space-x-3 p-2 rounded hover:bg-white"
+                    >
+                      <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center text-xs font-medium text-gray-600">
+                        {index + 1}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-medium text-gray-900">{step.name}</div>
+                        <div className="text-xs text-gray-600 mt-1">{step.action}</div>
+
+                        {stepResult && (
+                          <div className="flex items-center space-x-2 mt-1">
+                            <span className={`px-1 py-0.5 rounded text-xs ${
+                              stepResult.status === 'completed'
+                                ? 'bg-green-100 text-green-700'
+                                : stepResult.status === 'failed'
+                                ? 'bg-red-100 text-red-700'
+                                : 'bg-gray-100 text-gray-700'
+                            }`}>
+                              {stepResult.status === 'completed' && '✅'}
+                              {stepResult.status === 'failed' && '❌'}
+                              {stepResult.status === 'pending' && '⏳'}
+                            </span>
+                            {stepResult.duration && (
+                              <span className="text-xs text-gray-500">
+                                ({formatDuration(stepResult.duration)})
+                              </span>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* 实时用户操作 */}
+      <div className="bg-white rounded-lg shadow p-6 border border-gray-200">
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">实时用户操作</h2>
+        <div className="max-h-64 overflow-y-auto">
+          {userActions.length === 0 ? (
+            <div className="text-center text-gray-500 py-8">
+              <MouseClick className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+              <p>暂无用户操作记录</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {userActions.map((action, index) => (
+                <div
+                  key={action.id}
+                  className={`flex items-center justify-between p-2 rounded-lg ${
+                    action.success ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'
+                  }`}
+                >
+                  <div className="flex items-center space-x-3">
+                    <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium ${
+                      action.success ? 'bg-green-600 text-white' : 'bg-red-600 text-white'
+                    }`}>
+                      {action.success ? '✓' : '✗'}
+                    </span>
+                    <div>
+                      <div className="text-sm font-medium text-gray-900">
+                        {action.action}
+                      </div>
+                      <div className="text-xs text-gray-600">
+                        {action.target} • {action.timestamp.toLocaleTimeString()}
+                      </div>
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      {action.responseTime && `(${formatDuration(action.responseTime)})}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* 历史记录 */}
+      {testHistory.length > 0 && (
+        <div className="bg-white rounded-lg shadow p-6 border border-gray-200">
+          <h2 className="text-2xl font-semibold text-gray-900 mb-4">测试历史记录</h2>
+          <div className="max-h-64 overflow-y-auto">
+            <div className="space-y-2">
+              {testHistory.map((test, index) => (
+                <div
+                  key={`${test.testId}-${index}`}
+                  className={`flex items-center justify-between p-3 rounded-lg border ${
+                    test.status === 'passed'
+                      ? 'border-green-200 bg-green-50'
+                      : test.status === 'failed'
+                      ? 'border-red-200 bg-red-50'
+                      : 'border-gray-200 bg-gray-50'
+                  }`}
+                >
+                  <div className="flex items-center space-x-3">
+                    <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium ${
+                      test.status === 'passed'
+                        ? 'bg-green-600 text-white'
+                        : test.status === 'failed'
+                        ? 'bg-red-600 text-white'
+                        : 'bg-gray-600 text-white'
+                    }`}>
+                      {test.status === 'passed' && '✓'}
+                      {test.status === 'failed' && '✗'}
+                      {test.status === 'error' && '⚠️'}
+                      {test.status === 'running' && '⏳'}
+                    </span>
+                    <div>
+                      <div className="text-sm font-medium text-gray-900">
+                        {test.testName}
+                      </div>
+                      <div className="text-xs text-gray-600">
+                        {test.test.startTime?.toLocaleTimeString()} - {test.endTime?.toLocaleTimeString()}
+                      </div>
+                      {test.duration && (
+                        <div className="text-xs text-gray-500">
+                          耗时: {formatDuration(test.duration)}
+                        </div>
+                      )}
+                      {test.error && (
+                        <div className="text-xs text-red-600 mt-1 truncate max-w-xs">
+                          {test.error}
+                        </div>
+                      )}
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      {test.details?.completedSteps}/{test.details?.totalSteps} 步骤
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};

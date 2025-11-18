@@ -1,0 +1,385 @@
+import React, { useState, useEffect } from 'react';
+import { useProjectStore } from '../../stores/projectStore';
+import { useAPIConfigStore } from '../../stores/apiConfigStore';
+import { ErrorMonitorDebug } from './ErrorMonitorDebug';
+import { UserInteractionTester } from './UserInteractionTester';
+import { ErrorBaselineTester } from './ErrorBaselineTester';
+import { Project, Scene, GeneratedImage } from '../../types';
+
+export const DebugPage: React.FC = () => {
+  const {
+    currentProject,
+    projects,
+    selectedImagesPerScene
+  } = useProjectStore();
+
+  // Get scenes from current project
+  const scenes = currentProject?.scenes || [];
+
+  const { configurations, selectedConfigId } = useAPIConfigStore();
+
+  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
+    project: true,
+    scenes: true,
+    images: true,
+    config: true
+  });
+
+  const [activeTab, setActiveTab] = useState<'system' | 'errors' | 'testing' | 'baseline'>('system');
+
+  const toggleSection = (section: string) => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }));
+  };
+
+  const formatJSON = (obj: any) => {
+    return JSON.stringify(obj, null, 2);
+  };
+
+  const countAllImages = () => {
+    if (!scenes) return 0;
+    return scenes.reduce((total, scene) => total + (scene.images?.length || 0), 0);
+  };
+
+  const getScenesWithImages = () => {
+    if (!scenes) return [];
+    return scenes.filter(scene => scene.images && scene.images.length > 0);
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 p-8">
+      <div className="max-w-6xl mx-auto">
+        <h1 className="text-3xl font-bold text-gray-900 mb-8">🔧 系统调试页面</h1>
+
+        {/* Tab Navigation */}
+        <div className="flex space-x-4 mb-8 border-b border-gray-200">
+          <button
+            onClick={() => setActiveTab('system')}
+            className={`pb-4 px-2 font-medium text-sm border-b-2 transition-colors ${
+              activeTab === 'system'
+                ? 'text-blue-600 border-blue-600'
+                : 'text-gray-500 border-transparent hover:text-gray-700'
+            }`}
+          >
+            系统信息
+          </button>
+          <button
+            onClick={() => setActiveTab('errors')}
+            className={`pb-4 px-2 font-medium text-sm border-b-2 transition-colors ${
+              activeTab === 'errors'
+                ? 'text-blue-600 border-blue-600'
+                : 'text-gray-500 border-transparent hover:text-gray-700'
+            }`}
+          >
+            错误监控
+          </button>
+          <button
+            onClick={() => setActiveTab('testing')}
+            className={`pb-4 px-2 font-medium text-sm border-b-2 transition-colors ${
+              activeTab === 'testing'
+                ? 'text-blue-600 border-blue-600'
+                : 'text-gray-500 border-transparent hover:text-gray-700'
+            }`}
+          >
+            交互测试
+          </button>
+          <button
+            onClick={() => setActiveTab('baseline')}
+            className={`pb-4 px-2 font-medium text-sm border-b-2 transition-colors ${
+              activeTab === 'baseline'
+                ? 'text-blue-600 border-blue-600'
+                : 'text-gray-500 border-transparent hover:text-gray-700'
+            }`}
+          >
+            基准测试
+          </button>
+        </div>
+
+        {/* Tab Content */}
+        {activeTab === 'errors' ? (
+          <ErrorMonitorDebug />
+        ) : activeTab === 'testing' ? (
+          <UserInteractionTester />
+        ) : activeTab === 'baseline' ? (
+          <ErrorBaselineTester />
+        ) : (
+          <>
+
+        {/* Project Debug Info */}
+        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+          <div
+            className="flex items-center justify-between cursor-pointer"
+            onClick={() => toggleSection('project')}
+          >
+            <h2 className="text-xl font-semibold text-gray-800">📁 项目信息</h2>
+            <span className="text-gray-500">
+              {expandedSections.project ? '▼' : '▶'}
+            </span>
+          </div>
+
+          {expandedSections.project && (
+            <div className="mt-4 space-y-3">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <span className="font-medium text-gray-600">当前项目名称:</span>
+                  <span className="ml-2 text-gray-900">
+                    {currentProject?.name || '无'}
+                  </span>
+                </div>
+                <div>
+                  <span className="font-medium text-gray-600">项目总数:</span>
+                  <span className="ml-2 text-gray-900">{projects.length}</span>
+                </div>
+                <div>
+                  <span className="font-medium text-gray-600">当前项目ID:</span>
+                  <span className="ml-2 text-gray-900 text-sm">
+                    {currentProject?.id || '无'}
+                  </span>
+                </div>
+                <div>
+                  <span className="font-medium text-gray-600">场景数量:</span>
+                  <span className="ml-2 text-gray-900">{scenes?.length || 0}</span>
+                </div>
+              </div>
+
+              <div>
+                <h3 className="font-medium text-gray-600 mb-2">项目列表:</h3>
+                <div className="bg-gray-50 rounded p-3 max-h-40 overflow-y-auto">
+                  {projects.length > 0 ? (
+                    projects.map(project => (
+                      <div key={project.id} className="mb-2 pb-2 border-b border-gray-200 last:border-b-0">
+                        <span className="font-medium">{project.name}</span>
+                        <span className="ml-2 text-sm text-gray-500">
+                          ({project.scenes?.length || 0} 场景)
+                        </span>
+                        {currentProject?.id === project.id && (
+                          <span className="ml-2 px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">
+                            当前
+                          </span>
+                        )}
+                      </div>
+                    ))
+                  ) : (
+                    <span className="text-gray-500">无项目</span>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Scenes Debug Info */}
+        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+          <div
+            className="flex items-center justify-between cursor-pointer"
+            onClick={() => toggleSection('scenes')}
+          >
+            <h2 className="text-xl font-semibold text-gray-800">🎬 场景信息</h2>
+            <span className="text-gray-500">
+              {expandedSections.scenes ? '▼' : '▶'}
+            </span>
+          </div>
+
+          {expandedSections.scenes && (
+            <div className="mt-4 space-y-3">
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <span className="font-medium text-gray-600">场景总数:</span>
+                  <span className="ml-2 text-gray-900">{scenes?.length || 0}</span>
+                </div>
+                <div>
+                  <span className="font-medium text-gray-600">有图片的场景:</span>
+                  <span className="ml-2 text-green-600 font-medium">
+                    {getScenesWithImages().length}
+                  </span>
+                </div>
+                <div>
+                  <span className="font-medium text-gray-600">图片总数:</span>
+                  <span className="ml-2 text-blue-600 font-medium">
+                    {countAllImages()}
+                  </span>
+                </div>
+              </div>
+
+              <div>
+                <h3 className="font-medium text-gray-600 mb-2">场景详情:</h3>
+                <div className="bg-gray-50 rounded p-3 max-h-60 overflow-y-auto">
+                  {scenes && scenes.length > 0 ? (
+                    scenes.map(scene => (
+                      <div key={scene.id} className="mb-3 pb-3 border-b border-gray-200 last:border-b-0">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <span className="font-medium">
+                              场景 {scene.sceneNumber}: {scene.title}
+                            </span>
+                            <span className="ml-2 text-sm text-gray-500">
+                              ({scene.images?.length || 0} 张图片)
+                            </span>
+                          </div>
+                          {scene.images && scene.images.length > 0 && (
+                            <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded">
+                              有图片
+                            </span>
+                          )}
+                        </div>
+
+                        {scene.images && scene.images.length > 0 && (
+                          <div className="mt-2 ml-4">
+                            <div className="text-sm text-gray-600 mb-1">图片列表:</div>
+                            <div className="grid grid-cols-2 gap-2">
+                              {scene.images.map((img, idx) => (
+                                <div key={img.id} className="text-xs bg-white p-2 rounded border">
+                                  <div className="font-medium truncate">#{idx + 1} {img.prompt.substring(0, 30)}...</div>
+                                  <div className="text-gray-500">
+                                    ID: {img.id.substring(0, 8)}...
+                                  </div>
+                                  <div className="text-gray-500">
+                                    Provider: {img.provider}
+                                  </div>
+                                  <div className="text-gray-500">
+                                    SceneId: {img.metadata?.sceneId || '未设置'}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))
+                  ) : (
+                    <span className="text-gray-500">无场景</span>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Image Selection Debug Info */}
+        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+          <div
+            className="flex items-center justify-between cursor-pointer"
+            onClick={() => toggleSection('images')}
+          >
+            <h2 className="text-xl font-semibold text-gray-800">🖼️ 图片选择状态</h2>
+            <span className="text-gray-500">
+              {expandedSections.images ? '▼' : '▶'}
+            </span>
+          </div>
+
+          {expandedSections.images && (
+            <div className="mt-4 space-y-3">
+              <div>
+                <h3 className="font-medium text-gray-600 mb-2">按场景分组的选中图片:</h3>
+                <div className="bg-gray-50 rounded p-3">
+                  {Object.keys(selectedImagesPerScene).length > 0 ? (
+                    Object.entries(selectedImagesPerScene).map(([sceneId, imageIds]) => (
+                      <div key={sceneId} className="mb-2">
+                        <span className="font-medium">
+                          场景 {scenes?.find(s => s.id === sceneId)?.sceneNumber || sceneId}:
+                        </span>
+                        <span className="ml-2 text-blue-600">
+                          {imageIds.length} 张选中图片
+                        </span>
+                        <div className="ml-4 mt-1 text-sm text-gray-600">
+                          {imageIds.join(', ')}
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <span className="text-gray-500">无选中的图片</span>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* API Config Debug Info */}
+        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+          <div
+            className="flex items-center justify-between cursor-pointer"
+            onClick={() => toggleSection('config')}
+          >
+            <h2 className="text-xl font-semibold text-gray-800">⚙️ API配置信息</h2>
+            <span className="text-gray-500">
+              {expandedSections.config ? '▼' : '▶'}
+            </span>
+          </div>
+
+          {expandedSections.config && (
+            <div className="mt-4 space-y-3">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <span className="font-medium text-gray-600">配置总数:</span>
+                  <span className="ml-2 text-gray-900">{configurations.length}</span>
+                </div>
+                <div>
+                  <span className="font-medium text-gray-600">当前选中配置:</span>
+                  <span className="ml-2 text-gray-900">
+                    {configurations.find(c => c.id === selectedConfigId)?.name || '无'}
+                  </span>
+                </div>
+              </div>
+
+              <div>
+                <h3 className="font-medium text-gray-600 mb-2">配置列表:</h3>
+                <div className="bg-gray-50 rounded p-3 max-h-40 overflow-y-auto">
+                  {configurations.length > 0 ? (
+                    configurations.map(config => (
+                      <div key={config.id} className="mb-2 pb-2 border-b border-gray-200 last:border-b-0">
+                        <div className="flex items-center justify-between">
+                          <span className="font-medium">{config.name}</span>
+                          <div className="flex items-center space-x-2">
+                            <span className="text-xs px-2 py-1 bg-gray-100 rounded">
+                              {config.type}
+                            </span>
+                            {config.isActive && (
+                              <span className="text-xs px-2 py-1 bg-green-100 text-green-800 rounded">
+                                活跃
+                              </span>
+                            )}
+                            {selectedConfigId === config.id && (
+                              <span className="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded">
+                                选中
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <div className="text-sm text-gray-500 mt-1">
+                          端点: {config.endpoint}
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <span className="text-gray-500">无配置</span>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Raw Data */}
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <h2 className="text-xl font-semibold text-gray-800 mb-4">📊 原始数据</h2>
+          <div className="space-y-4">
+            <div>
+              <h3 className="font-medium text-gray-600 mb-2">当前项目数据:</h3>
+              <pre className="bg-gray-50 p-4 rounded text-xs overflow-x-auto max-h-60 overflow-y-auto">
+                {formatJSON(currentProject)}
+              </pre>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+          <>
+        )}
+        <>
+  );
+};
+
+export default DebugPage;
